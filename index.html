@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lo-Fi Pong Wars | Generative Soundscape & Territory Simulation</title>
+  <meta name="description" content="A soothing zero-player canvas simulation combining generative Lo-Fi Rhodes synthesizer, dynamic jazz chord progressions, and multi-team territory battles for deep focus.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- GSAP Animation Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #090c15;
+      --bg-surface: rgba(16, 22, 36, 0.72);
+      --bg-surface-hover: rgba(26, 35, 56, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(56, 189, 248, 0.3);
+      --card-blur: 20px;
+
+      /* Team Palette */
+      --team-amber: #f59e0b;
+      --team-amber-glow: rgba(245, 158, 11, 0.5);
+      --team-lavender: #818cf8;
+      --team-lavender-glow: rgba(129, 140, 248, 0.5);
+      --team-emerald: #10b981;
+      --team-emerald-glow: rgba(16, 185, 129, 0.5);
+      --team-rose: #f43f5e;
+      --team-rose-glow: rgba(244, 63, 94, 0.5);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --accent-cyan: #38bdf8;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 24px;
+      --radius-full: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-base);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #app-viewport {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #111728 0%, var(--bg-base) 100%);
+    }
+
+    canvas {
+      display: block;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--border-subtle);
+      border-radius: 0;
+      cursor: crosshair;
+      transition: transform 0.2s ease;
+    }
+
+    /* Ambient Background Pulse */
+    .ambient-glow {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 1;
+      transition: background 1.2s ease;
+      background: radial-gradient(circle, var(--team-amber) 0%, transparent 70%);
+    }
+
+    /* Top HUD: Territory Bar & Active Harmonic Chord */
+    .top-hud {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .territory-capsule {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      background: var(--bg-surface);
+      backdrop-filter: blur(var(--card-blur));
+      -webkit-backdrop-filter: blur(var(--card-blur));
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 6px 16px;
+      gap: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .team-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.2px;
+      transition: color 0.3s;
+    }
+
+    .stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      transition: box-shadow 0.3s ease, background-color 0.3s ease;
+    }
+
+    .dot-0 { background: var(--team-amber); box-shadow: 0 0 10px var(--team-amber-glow); }
+    .dot-1 { background: var(--team-lavender); box-shadow: 0 0 10px var(--team-lavender-glow); }
+    .dot-2 { background: var(--team-emerald); box-shadow: 0 0 10px var(--team-emerald-glow); }
+    .dot-3 { background: var(--team-rose); box-shadow: 0 0 10px var(--team-rose-glow); }
+
+    .ratio-track {
+      width: 140px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .ratio-segment {
+      height: 100%;
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .seg-0 { background: var(--team-amber); }
+    .seg-1 { background: var(--team-lavender); }
+    .seg-2 { background: var(--team-emerald); }
+    .seg-3 { background: var(--team-rose); }
+
+    .chord-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(10, 14, 26, 0.6);
+      backdrop-filter: blur(8px);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      letter-spacing: 0.5px;
+    }
+
+    .chord-name {
+      color: var(--accent-cyan);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    /* Mode Switcher Pill (2P / 3P / 4P) */
+    .mode-switcher {
+      display: flex;
+      align-items: center;
+      background: rgba(10, 14, 26, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-subtle);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mode-btn:hover {
+      color: var(--text-main);
+    }
+
+    .mode-btn.active {
+      background: var(--bg-surface-hover);
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* Floating Studio Control Deck */
+    .control-deck {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-surface);
+      backdrop-filter: blur(var(--card-blur));
+      -webkit-backdrop-filter: blur(var(--card-blur));
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 20;
+      box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .deck-divider {
+      width: 1px;
+      height: 22px;
+      background: var(--border-subtle);
+    }
+
+    button.icon-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    button.icon-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    button.icon-btn:active {
+      transform: translateY(1px);
+    }
+
+    button.icon-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--border-accent);
+      color: var(--accent-cyan);
+    }
+
+    .range-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .range-control input[type="range"] {
+      -webkit-appearance: none;
+      width: 64px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      outline: none;
+    }
+
+    .range-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--text-main);
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .range-control input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+      background: var(--accent-cyan);
+    }
+
+    /* Pomodoro Clock Display */
+    .pomo-capsule {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.08);
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    /* Top Corner Links */
+    .github-badge {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--bg-surface);
+      backdrop-filter: blur(var(--card-blur));
+      border: 1px solid var(--border-subtle);
+      padding: 7px 14px;
+      border-radius: var(--radius-full);
+      transition: all 0.2s ease;
+      z-index: 20;
+    }
+
+    .github-badge:hover {
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+    }
+
+    /* Start / Audio Unlock Overlay */
+    .start-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(9, 12, 21, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      cursor: pointer;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .start-modal.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .start-card {
+      background: rgba(18, 24, 40, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 40px 48px;
+      border-radius: 28px;
+      text-align: center;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8);
+      max-width: 440px;
+    }
+
+    .modal-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .start-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .start-description {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #818cf8 100%);
+      color: #090c15;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 13px 32px;
+      border-radius: var(--radius-full);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .primary-btn:hover {
+      transform: scale(1.04);
+      box-shadow: 0 8px 30px rgba(129, 140, 248, 0.45);
+    }
+
+    /* Toast Notification */
+    .toast-pill {
+      position: absolute;
+      top: 88px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(16, 22, 38, 0.95);
+      border: 1px solid var(--border-accent);
+      color: var(--text-main);
+      padding: 8px 20px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 100;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .control-deck {
+        flex-wrap: wrap;
+        width: calc(100vw - 32px);
+        justify-content: center;
+        gap: 10px;
+        padding: 10px;
+        bottom: 16px;
+      }
+      .deck-divider { display: none; }
+      .github-badge { top: 12px; right: 12px; padding: 5px 10px; font-size: 11px; }
+      .top-hud { top: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app-viewport">
+    <div class="ambient-glow" id="ambient-glow"></div>
+
+    <!-- Top HUD: Dynamic Territory Progress & Chord -->
+    <div class="top-hud">
+      <div class="territory-capsule" id="territory-capsule">
+        <div id="team-stats-container" style="display: flex; align-items: center; gap: 10px;">
+          <!-- Dynamically Injected Stats -->
+        </div>
+        <div class="ratio-track" id="ratio-track">
+          <!-- Dynamically Injected Ratio Segments -->
+        </div>
+      </div>
+      
+      <div class="chord-badge" id="chord-badge">
+        <span>HARMONY:</span>
+        <span class="chord-name" id="chord-name">Ebmaj9</span>
+      </div>
+    </div>
+
+    <!-- GitHub Link -->
+    <a href="https://github.com/vnglst/pong-wars" target="_blank" rel="noopener" class="github-badge" title="Forked & Enhanced from Pong Wars">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      <span>Pong Wars</span>
+    </a>
+
+    <!-- Canvas Simulation -->
+    <canvas id="stage"></canvas>
+
+    <!-- Bottom Studio Control Deck -->
+    <div class="control-deck" id="control-deck">
+      <!-- Team Count Selector -->
+      <div class="mode-switcher">
+        <button class="mode-btn active" data-teams="2">2 Balls</button>
+        <button class="mode-btn" data-teams="3">3 Balls</button>
+        <button class="mode-btn" data-teams="4">4 Balls</button>
+      </div>
+
+      <div class="deck-divider"></div>
+
+      <!-- Playback & Speed -->
+      <div class="control-group">
+        <button class="icon-btn" id="btn-pause" title="Toggle Play / Pause (Space)">
+          <span id="pause-icon">⏸</span>
+          <span id="pause-text">Pause</span>
+        </button>
+        <div class="range-control">
+          <span>Speed</span>
+          <input type="range" id="speed-slider" min="0.5" max="2.5" step="0.1" value="1.0">
+        </div>
+      </div>
+
+      <div class="deck-divider"></div>
+
+      <!-- Sound Controls -->
+      <div class="control-group">
+        <div class="range-control">
+          <span>Vol</span>
+          <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.7">
+        </div>
+        <button class="icon-btn active" id="btn-vinyl" title="Toggle Vinyl Warmth">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+          <span>Vinyl</span>
+        </button>
+      </div>
+
+      <div class="deck-divider"></div>
+
+      <!-- Pomodoro Focus Timer -->
+      <div class="control-group">
+        <div class="pomo-capsule" id="pomo-display">25:00</div>
+        <button class="icon-btn" id="btn-pomo-toggle">Start Focus</button>
+        <button class="icon-btn" id="btn-pomo-mode">25m</button>
+      </div>
+    </div>
+
+    <!-- Start / Audio Unlock Overlay -->
+    <div class="start-modal" id="start-modal">
+      <div class="start-card" id="start-card">
+        <div class="modal-tag">Interactive Soundscape</div>
+        <h1 class="start-title">Lo-Fi Pong Wars</h1>
+        <p class="start-description">
+          An autonomous generative ambient simulation. Watch competing color factions battle for territory while synthesizing warm Rhodes chords in real-time.
+        </p>
+        <button class="primary-btn" id="start-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <span>Start Audio & Simulation</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-pill" id="toast-msg">Focus session completed! Time for a warm break ☕</div>
+  </div>
+
+  <script>
+    /**
+     * Lo-Fi Pong Wars - Studio Edition
+     * Multi-Faction (2, 3, 4 Teams) + Procedural Web Audio Synth + GSAP Animations
+     */
+
+    // --- Color Palettes for up to 4 Teams ---
+    const TEAM_PALETTES = [
+      { id: 0, name: 'Amber Sunset', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', waveform: 'sine' },
+      { id: 1, name: 'Twilight Lavender', color: '#818cf8', glow: 'rgba(129, 140, 248, 0.5)', waveform: 'triangle' },
+      { id: 2, name: 'Emerald Sage', color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)', waveform: 'sine' },
+      { id: 3, name: 'Coral Rose', color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.5)', waveform: 'triangle' }
+    ];
+
+    // Neo-Soul / Lo-Fi Harmonic Cycle (Ebmaj9 -> Cm7 -> Fm9 -> Bb13)
+    const CHORD_PROGRESSION = [
+      { name: "Ebmaj9", baseFreqs: [155.56, 196.00, 233.08, 293.66, 349.23, 392.00, 466.16, 587.33] },
+      { name: "Cm7",    baseFreqs: [130.81, 155.56, 196.00, 233.08, 261.63, 311.13, 392.00, 466.16] },
+      { name: "Fm9",    baseFreqs: [174.61, 207.65, 261.63, 311.13, 349.23, 415.30, 523.25, 622.25] },
+      { name: "Bb13",   baseFreqs: [116.54, 146.83, 174.61, 207.65, 233.08, 293.66, 349.23, 466.16] }
+    ];
+
+    const GRID_SIZE = 32;
+    let teamCount = 2;
+    let activeChordIndex = 0;
+    let chordHitsCounter = 0;
+    const CHORD_CHANGE_HITS = 24;
+
+    // --- Web Audio Synthesizer Engine ---
+    class LoFiSynth {
+      constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.delaySend = null;
+        this.vinylGain = null;
+        this.isVinylEnabled = true;
+        this.volume = 0.7;
+        this.initialized = false;
+      }
+
+      init() {
+        if (this.initialized) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+
+        // Master Output Gain
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+
+        // Ambient Stereo Space / Delay Node
+        const delay = this.ctx.createDelay();
+        delay.delayTime.setValueAtTime(0.28, this.ctx.currentTime);
+        
+        const feedback = this.ctx.createGain();
+        feedback.gain.setValueAtTime(0.32, this.ctx.currentTime);
+        
+        const delayFilter = this.ctx.createBiquadFilter();
+        delayFilter.type = "lowpass";
+        delayFilter.frequency.setValueAtTime(1100, this.ctx.currentTime);
+
+        delay.connect(feedback);
+        feedback.connect(delayFilter);
+        delayFilter.connect(delay);
+        delayFilter.connect(this.masterGain);
+
+        this.delaySend = this.ctx.createGain();
+        this.delaySend.gain.setValueAtTime(0.38, this.ctx.currentTime);
+        this.delaySend.connect(delay);
+
+        this.masterGain.connect(this.ctx.destination);
+
+        this.initVinyl();
+        this.initialized = true;
+      }
+
+      initVinyl() {
+        const bufferSize = this.ctx.sampleRate * 4;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+          const brown = (Math.random() * 2 - 1) * 0.012;
+          const crackle = Math.random() > 0.9995 ? (Math.random() * 2 - 1) * 0.22 : 0;
+          data[i] = brown + crackle;
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        noise.loop = true;
+
+        const noiseFilter = this.ctx.createBiquadFilter();
+        noiseFilter.type = "bandpass";
+        noiseFilter.frequency.setValueAtTime(750, this.ctx.currentTime);
+        noiseFilter.Q.setValueAtTime(0.9, this.ctx.currentTime);
+
+        this.vinylGain = this.ctx.createGain();
+        this.vinylGain.gain.setValueAtTime(this.isVinylEnabled ? 0.35 : 0, this.ctx.currentTime);
+
+        noise.connect(noiseFilter);
+        noiseFilter.connect(this.vinylGain);
+        this.vinylGain.connect(this.masterGain);
+        noise.start();
+      }
+
+      setVolume(val) {
+        this.volume = val;
+        if (this.masterGain && this.ctx) {
+          this.masterGain.gain.setTargetAtTime(val, this.ctx.currentTime, 0.05);
+        }
+      }
+
+      toggleVinyl() {
+        this.isVinylEnabled = !this.isVinylEnabled;
+        if (this.vinylGain && this.ctx) {
+          this.vinylGain.gain.setTargetAtTime(this.isVinylEnabled ? 0.35 : 0, this.ctx.currentTime, 0.1);
+        }
+        return this.isVinylEnabled;
+      }
+
+      playNote(freq, pan = 0, teamIndex = 0) {
+        if (!this.initialized || !this.ctx || this.ctx.state !== "running") return;
+        const now = this.ctx.currentTime;
+
+        const palette = TEAM_PALETTES[teamIndex % TEAM_PALETTES.length];
+
+        // Dual Oscillator with Chorus Detuning
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+
+        osc1.type = palette.waveform;
+        osc2.type = "sine";
+
+        osc1.frequency.setValueAtTime(freq, now);
+        osc2.frequency.setValueAtTime(freq * 1.0025, now);
+
+        // Low-pass Filter Envelope
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(1500, now);
+        filter.frequency.exponentialRampToValueAtTime(320, now + 1.2);
+
+        // Amplitude Envelope (ADSR)
+        const gainNode = this.ctx.createGain();
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.24, now + 0.008);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.35);
+
+        // Stereo Panning
+        const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
+        if (panner) panner.pan.setValueAtTime(pan, now);
+
+        osc1.connect(filter);
+        osc2.connect(filter);
+        filter.connect(gainNode);
+
+        if (panner) {
+          gainNode.connect(panner);
+          panner.connect(this.masterGain);
+          panner.connect(this.delaySend);
+        } else {
+          gainNode.connect(this.masterGain);
+          gainNode.connect(this.delaySend);
+        }
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 1.4);
+        osc2.stop(now + 1.4);
+      }
+
+      playChime() {
+        if (!this.initialized) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((f, i) => {
+          setTimeout(() => this.playNote(f, 0, 0), i * 160);
+        });
+      }
+    }
+
+    const synth = new LoFiSynth();
+
+    // --- Canvas & Simulation State ---
+    const canvas = document.getElementById('stage');
+    const ctx = canvas.getContext('2d');
+
+    let width = 640;
+    let height = 640;
+    let tileSize = width / GRID_SIZE;
+    let grid = [];
+    let balls = [];
+    let particles = [];
+    let shockwaves = [];
+    let isPaused = false;
+    let speedMultiplier = 1.0;
+
+    function resizeCanvas() {
+      const minDim = Math.min(window.innerWidth * 0.88, window.innerHeight * 0.74);
+      const size = Math.floor(Math.max(320, Math.min(minDim, 680)));
+      width = size;
+      height = size;
+      tileSize = width / GRID_SIZE;
+
+      canvas.width = width;
+      canvas.height = height;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+    }
+
+    // Set up Grid Territory according to Team Count (2, 3, or 4)
+    function setupGridAndBalls() {
+      grid = [];
+      balls = [];
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        grid[r] = [];
+        for (let c = 0; c < GRID_SIZE; c++) {
+          if (teamCount === 2) {
+            grid[r][c] = c < GRID_SIZE / 2 ? 0 : 1;
+          } else if (teamCount === 3) {
+            if (c < Math.floor(GRID_SIZE / 3)) grid[r][c] = 0;
+            else if (c < Math.floor(GRID_SIZE * 2 / 3)) grid[r][c] = 1;
+            else grid[r][c] = 2;
+          } else if (teamCount === 4) {
+            const isTop = r < GRID_SIZE / 2;
+            const isLeft = c < GRID_SIZE / 2;
+            if (isTop && isLeft) grid[r][c] = 0;       // Top-Left
+            else if (isTop && !isLeft) grid[r][c] = 1;  // Top-Right
+            else if (!isTop && isLeft) grid[r][c] = 2;  // Bottom-Left
+            else grid[r][c] = 3;                       // Bottom-Right
+          }
+        }
+      }
+
+      // Initialize Balls in Opposite Enemy Territory
+      if (teamCount === 2) {
+        balls.push({
+          x: (GRID_SIZE * 0.75) * tileSize,
+          y: (GRID_SIZE * 0.5) * tileSize,
+          dx: -3.2, dy: 3.2, radius: 7.5, team: 0,
+          palette: TEAM_PALETTES[0]
+        });
+        balls.push({
+          x: (GRID_SIZE * 0.25) * tileSize,
+          y: (GRID_SIZE * 0.5) * tileSize,
+          dx: 3.2, dy: -3.2, radius: 7.5, team: 1,
+          palette: TEAM_PALETTES[1]
+        });
+      } else if (teamCount === 3) {
+        balls.push({
+          x: (GRID_SIZE * 0.5) * tileSize, y: (GRID_SIZE * 0.25) * tileSize,
+          dx: -3.0, dy: 3.0, radius: 7.5, team: 0, palette: TEAM_PALETTES[0]
+        });
+        balls.push({
+          x: (GRID_SIZE * 0.85) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
+          dx: -3.2, dy: -2.8, radius: 7.5, team: 1, palette: TEAM_PALETTES[1]
+        });
+        balls.push({
+          x: (GRID_SIZE * 0.15) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
+          dx: 3.2, dy: -3.0, radius: 7.5, team: 2, palette: TEAM_PALETTES[2]
+        });
+      } else if (teamCount === 4) {
+        balls.push({
+          x: (GRID_SIZE * 0.75) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
+          dx: -3.0, dy: -3.0, radius: 7, team: 0, palette: TEAM_PALETTES[0]
+        });
+        balls.push({
+          x: (GRID_SIZE * 0.25) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
+          dx: 3.0, dy: -3.0, radius: 7, team: 1, palette: TEAM_PALETTES[1]
+        });
+        balls.push({
+          x: (GRID_SIZE * 0.75) * tileSize, y: (GRID_SIZE * 0.25) * tileSize,
+          dx: -3.0, dy: 3.0, radius: 7, team: 2, palette: TEAM_PALETTES[2]
+        });
+        balls.push({
+          x: (GRID_SIZE * 0.25) * tileSize, y: (GRID_SIZE * 0.25) * tileSize,
+          dx: 3.0, dy: 3.0, radius: 7, team: 3, palette: TEAM_PALETTES[3]
+        });
+      }
+
+      updateHUDStructure();
+      updateTerritoryScore();
+    }
+
+    // Dynamic HUD DOM reconstruction
+    function updateHUDStructure() {
+      const statsContainer = document.getElementById('team-stats-container');
+      const ratioTrack = document.getElementById('ratio-track');
+      statsContainer.innerHTML = '';
+      ratioTrack.innerHTML = '';
+
+      for (let t = 0; t < teamCount; t++) {
+        const stat = document.createElement('div');
+        stat.className = 'team-stat';
+        stat.innerHTML = `<div class="stat-dot dot-${t}"></div><span id="score-${t}">0%</span>`;
+        statsContainer.appendChild(stat);
+
+        const seg = document.createElement('div');
+        seg.className = `ratio-segment seg-${t}`;
+        seg.id = `seg-${t}`;
+        seg.style.width = `${100 / teamCount}%`;
+        ratioTrack.appendChild(seg);
+      }
+    }
+
+    function addFlipParticles(x, y, color) {
+      for (let i = 0; i < 5; i++) {
+        particles.push({
+          x: x + tileSize / 2,
+          y: y + tileSize / 2,
+          vx: (Math.random() - 0.5) * 2.8,
+          vy: (Math.random() - 0.5) * 2.8,
+          size: Math.random() * 2 + 1.5,
+          color: color,
+          alpha: 1.0,
+          life: 0.93
+        });
+      }
+    }
+
+    function addShockwave(x, y, color) {
+      shockwaves.push({
+        x: x, y: y, radius: 2, maxRadius: 55, color: color, alpha: 0.8
+      });
+    }
+
+    function updateTerritoryScore() {
+      const counts = new Array(teamCount).fill(0);
+      const total = GRID_SIZE * GRID_SIZE;
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const t = grid[r][c];
+          if (t < teamCount) counts[t]++;
+        }
+      }
+
+      for (let t = 0; t < teamCount; t++) {
+        const pct = Math.round((counts[t] / total) * 100);
+        const scoreEl = document.getElementById(`score-${t}`);
+        const segEl = document.getElementById(`seg-${t}`);
+        if (scoreEl) scoreEl.innerText = `${pct}%`;
+        if (segEl) segEl.style.width = `${pct}%`;
+      }
+    }
+
+    function getNoteForCoord(row) {
+      const currentChord = CHORD_PROGRESSION[activeChordIndex];
+      const freqs = currentChord.baseFreqs;
+      const noteIdx = Math.floor((row / GRID_SIZE) * freqs.length) % freqs.length;
+      return freqs[freqs.length - 1 - noteIdx];
+    }
+
+    function updatePhysics() {
+      if (isPaused) return;
+
+      for (let b = 0; b < balls.length; b++) {
+        const ball = balls[b];
+        ball.x += ball.dx * speedMultiplier;
+        ball.y += ball.dy * speedMultiplier;
+
+        // Boundary Bounces
+        if (ball.x - ball.radius < 0) {
+          ball.x = ball.radius;
+          ball.dx = Math.abs(ball.dx);
+        } else if (ball.x + ball.radius > width) {
+          ball.x = width - ball.radius;
+          ball.dx = -Math.abs(ball.dx);
+        }
+
+        if (ball.y - ball.radius < 0) {
+          ball.y = ball.radius;
+          ball.dy = Math.abs(ball.dy);
+        } else if (ball.y + ball.radius > height) {
+          ball.y = height - ball.radius;
+          ball.dy = -Math.abs(ball.dy);
+        }
+
+        // Multi-point Collision Sampling
+        const testPoints = [
+          { x: ball.x + Math.sign(ball.dx) * ball.radius, y: ball.y, axis: 'x' },
+          { x: ball.x, y: ball.y + Math.sign(ball.dy) * ball.radius, axis: 'y' }
+        ];
+
+        for (const pt of testPoints) {
+          const col = Math.floor(pt.x / tileSize);
+          const row = Math.floor(pt.y / tileSize);
+
+          if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+            if (grid[row][col] !== ball.team) {
+              grid[row][col] = ball.team;
+
+              if (pt.axis === 'x') ball.dx = -ball.dx;
+              if (pt.axis === 'y') ball.dy = -ball.dy;
+
+              const freq = getNoteForCoord(row);
+              const pan = (col / GRID_SIZE) * 1.6 - 0.8;
+              synth.playNote(freq, pan, ball.team);
+
+              addFlipParticles(col * tileSize, row * tileSize, ball.palette.color);
+              addShockwave(pt.x, pt.y, ball.palette.color);
+
+              chordHitsCounter++;
+              if (chordHitsCounter >= CHORD_CHANGE_HITS) {
+                chordHitsCounter = 0;
+                activeChordIndex = (activeChordIndex + 1) % CHORD_PROGRESSION.length;
+                
+                // Animate Chord Switch with GSAP
+                const chordNameEl = document.getElementById('chord-name');
+                chordNameEl.innerText = CHORD_PROGRESSION[activeChordIndex].name;
+                gsap.fromTo(chordNameEl, { scale: 1.4, color: '#f59e0b' }, { scale: 1.0, color: '#38bdf8', duration: 0.5, ease: "power2.out" });
+              }
+
+              updateTerritoryScore();
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    function render() {
+      // 1. Fill base with crisp pure white for dividing grid lines
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+
+      // 2. Grid Tiles (sharp squares separated by crisp white lines)
+      const lineThickness = 1.2;
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const t = grid[r][c];
+          ctx.fillStyle = TEAM_PALETTES[t % TEAM_PALETTES.length].color;
+          ctx.fillRect(
+            c * tileSize + lineThickness / 2,
+            r * tileSize + lineThickness / 2,
+            tileSize - lineThickness,
+            tileSize - lineThickness
+          );
+        }
+      }
+
+      // 2. Shockwaves
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i];
+        ctx.beginPath();
+        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = sw.color;
+        ctx.globalAlpha = sw.alpha;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+
+        sw.radius += 2.0;
+        sw.alpha *= 0.93;
+        if (sw.radius > sw.maxRadius || sw.alpha < 0.05) shockwaves.splice(i, 1);
+      }
+
+      // 3. Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha *= p.life;
+        if (p.alpha < 0.05) particles.splice(i, 1);
+      }
+
+      // 4. Glowing Balls
+      for (const ball of balls) {
+        ctx.save();
+        ctx.shadowColor = ball.palette.glow;
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = ball.palette.color;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(ball.x - ball.radius * 0.28, ball.y - ball.radius * 0.28, ball.radius * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function loop() {
+      updatePhysics();
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    // --- Interactive Waves ---
+    canvas.addEventListener('pointerdown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      addShockwave(clickX, clickY, '#38bdf8');
+      if (synth.initialized) synth.playNote(880, 0, 0);
+
+      balls.forEach(b => {
+        const dx = b.x - clickX;
+        const dy = b.y - clickY;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 130 && dist > 1) {
+          b.dx += (dx / dist) * 2.2;
+          b.dy += (dy / dist) * 2.2;
+        }
+      });
+    });
+
+    // --- Pomodoro Focus Timer ---
+    let pomoMinutes = 25;
+    let pomoSeconds = 0;
+    let pomoTimer = null;
+    let isPomoRunning = false;
+
+    const pomoDisplay = document.getElementById('pomo-display');
+    const pomoToggleBtn = document.getElementById('btn-pomo-toggle');
+    const pomoModeBtn = document.getElementById('btn-pomo-mode');
+    const toast = document.getElementById('toast-msg');
+
+    function updatePomoText() {
+      const m = String(pomoMinutes).padStart(2, '0');
+      const s = String(pomoSeconds).padStart(2, '0');
+      pomoDisplay.innerText = `${m}:${s}`;
+    }
+
+    function triggerToast(msg) {
+      toast.innerText = msg;
+      gsap.fromTo(toast, 
+        { autoAlpha: 0, y: -20, scale: 0.9 }, 
+        { autoAlpha: 1, y: 0, scale: 1.0, duration: 0.4, ease: "back.out(1.7)" }
+      );
+      setTimeout(() => {
+        gsap.to(toast, { autoAlpha: 0, y: -15, duration: 0.3, ease: "power2.in" });
+      }, 3500);
+    }
+
+    pomoToggleBtn.addEventListener('click', () => {
+      if (isPomoRunning) {
+        clearInterval(pomoTimer);
+        isPomoRunning = false;
+        pomoToggleBtn.innerText = "Start Focus";
+        pomoToggleBtn.classList.remove('active');
+      } else {
+        isPomoRunning = true;
+        pomoToggleBtn.innerText = "Pause";
+        pomoToggleBtn.classList.add('active');
+        pomoTimer = setInterval(() => {
+          if (pomoSeconds === 0) {
+            if (pomoMinutes === 0) {
+              clearInterval(pomoTimer);
+              isPomoRunning = false;
+              pomoToggleBtn.innerText = "Start Focus";
+              pomoToggleBtn.classList.remove('active');
+              synth.playChime();
+              triggerToast("🎉 Focus session complete! Time to stretch & hydrate ☕");
+              return;
+            }
+            pomoMinutes--;
+            pomoSeconds = 59;
+          } else {
+            pomoSeconds--;
+          }
+          updatePomoText();
+        }, 1000);
+      }
+    });
+
+    pomoModeBtn.addEventListener('click', () => {
+      if (isPomoRunning) return;
+      if (pomoMinutes === 25) {
+        pomoMinutes = 50;
+        pomoModeBtn.innerText = "50m";
+      } else if (pomoMinutes === 50) {
+        pomoMinutes = 5;
+        pomoModeBtn.innerText = "5m";
+      } else {
+        pomoMinutes = 25;
+        pomoModeBtn.innerText = "25m";
+      }
+      pomoSeconds = 0;
+      updatePomoText();
+    });
+
+    // --- UI & Mode Switching ---
+    const startModal = document.getElementById('start-modal');
+    const startCard = document.getElementById('start-card');
+    const startBtn = document.getElementById('start-btn');
+    const btnPause = document.getElementById('btn-pause');
+    const pauseIcon = document.getElementById('pause-icon');
+    const pauseText = document.getElementById('pause-text');
+    const speedSlider = document.getElementById('speed-slider');
+    const volSlider = document.getElementById('vol-slider');
+    const btnVinyl = document.getElementById('btn-vinyl');
+
+    // Entrance Animation via GSAP
+    gsap.from(startCard, {
+      scale: 0.85,
+      autoAlpha: 0,
+      y: 30,
+      duration: 0.7,
+      ease: "back.out(1.4)"
+    });
+
+    function startExperience() {
+      synth.init();
+      if (synth.ctx && synth.ctx.state === "suspended") synth.ctx.resume();
+      
+      gsap.to(startModal, {
+        autoAlpha: 0,
+        duration: 0.45,
+        ease: "power2.inOut",
+        onComplete: () => startModal.classList.add('hidden')
+      });
+    }
+
+    startBtn.addEventListener('click', startExperience);
+    startModal.addEventListener('click', (e) => {
+      if (e.target === startModal) startExperience();
+    });
+
+    // Mode Selector (2 / 3 / 4 Balls)
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        teamCount = parseInt(btn.getAttribute('data-teams'), 10);
+        setupGridAndBalls();
+        triggerToast(`Switched to ${teamCount}-Ball Battle Mode!`);
+      });
+    });
+
+    btnPause.addEventListener('click', () => {
+      isPaused = !isPaused;
+      pauseIcon.innerText = isPaused ? "▶" : "⏸";
+      pauseText.innerText = isPaused ? "Resume" : "Pause";
+      btnPause.classList.toggle('active', isPaused);
+    });
+
+    speedSlider.addEventListener('input', (e) => {
+      speedMultiplier = parseFloat(e.target.value);
+    });
+
+    volSlider.addEventListener('input', (e) => {
+      synth.setVolume(parseFloat(e.target.value));
+    });
+
+    btnVinyl.addEventListener('click', () => {
+      const enabled = synth.toggleVinyl();
+      btnVinyl.classList.toggle('active', enabled);
+      triggerToast(enabled ? "Vinyl Crackle On ☕" : "Vinyl Crackle Muted");
+    });
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        btnPause.click();
+      } else if (e.key === '2' || e.key === '3' || e.key === '4') {
+        const btn = document.querySelector(`.mode-btn[data-teams="${e.key}"]`);
+        if (btn) btn.click();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+    });
+
+    // Initialization
+    resizeCanvas();
+    setupGridAndBalls();
+    loop();
+  </script>
+</body>
+</html>
