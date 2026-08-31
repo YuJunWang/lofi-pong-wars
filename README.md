@@ -2,11 +2,15 @@
 
 > An autonomous zero-player ambient simulation blending **Generative Lo-Fi Synthesis**, **Dynamic Jazz Chord Progressions**, and **Multi-Faction Territory Battles** for focus, study, and relaxation.
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Play%20Online-f59e0b?style=for-the-badge&logo=google-chrome&logoColor=white)](https://yujunwang.github.io/lofi-pong-wars/)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-amber.svg)](LICENSE)
 [![Stack](https://img.shields.io/badge/Stack-Vanilla%20JS%20%7C%20HTML5%20Canvas-38bdf8.svg)](index.html)
 [![Audio Engine](https://img.shields.io/badge/Audio-Web%20Audio%20API-818cf8.svg)](index.html)
 [![Animation](https://img.shields.io/badge/Animation-GSAP%203-10b981.svg)](https://gsap.com)
 [![Zero Build](https://img.shields.io/badge/Build-Zero%20Dependency-emerald.svg)](index.html)
+
+🔗 **Online Demo**: [https://yujunwang.github.io/lofi-pong-wars/](https://yujunwang.github.io/lofi-pong-wars/)
 
 ---
 
