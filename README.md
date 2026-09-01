@@ -16,30 +16,32 @@
 
 ## ✨ Features
 
-1. **Multi-Team Battle Modes (2, 3, or 4 Balls)**
+1. **4 Curated Soundscape Styles with Polyphonic Voice Roles**
+   - **☕ Lo-Fi Study**: Warm Rhodes (Tenor) + Upright Sub Bass + Music Box (Treble) + Muted Acoustic Pluck.
+   - **🌌 Cyber Synth**: 80s Analog Saw Lead + Reese Sub Bass + FM Crystal Arp + Neon Pluck.
+   - **🎋 Zen Garden**: Plucked Koto (古箏) + Bamboo Flute Drone (尺八) + Singing Bowl + Kalimba.
+   - **👾 8-Bit Arcade**: NES Square Lead (50% Pulse) + Triangle Bass + Pulse Arp + Retro Coin Blip.
+   - Instant style switching via the floating Studio Deck dropdown or pressing `S`.
+
+2. **Multi-Team Battle Modes (2, 3, or 4 Balls)**
    - **2 Balls**: Amber Sunset (`#f59e0b`) vs. Twilight Lavender (`#818cf8`).
    - **3 Balls**: Amber vs. Lavender vs. Emerald Sage (`#10b981`).
    - **4 Balls**: 4-Quadrant elemental warfare adding Coral Rose (`#f43f5e`).
    - Instant mode switching via UI pills or keyboard shortcuts (`2`, `3`, `4`).
 
-2. **Procedural Web Audio Rhodes Synthesizer (Zero Audio Files)**
-   - **Vintage Rhodes Timbre**: Dual oscillators with subtle detuning shimmer, low-pass envelope filter sweep, and stereo field panning.
-   - **Dynamic Jazz Harmonies**: Cycles through soothing Neo-Soul progressions ($Eb^{\text{maj9}} \to Cm^7 \to Fm^9 \to Bb^{13}$).
-   - **Consonant Collision Mapping**: Grid coordinates map mathematically to the active chord's extended pentatonic notes—guaranteeing 100% harmonious soundscapes at all times.
-   - **Procedural Vinyl Texture**: Real-time synthesized warm crackle and brown noise room ambiance.
+3. **Background Tab Web Worker Audio Engine**
+   - Decoupled Web Worker ticker ensures **music and physics keep running uninterrupted even when switching tabs**.
+   - Zero external audio samples—everything synthesized mathematically in real-time.
 
-3. **Polished UI/UX & GSAP Micro-Interactions**
+4. **Polished UI/UX & GSAP Micro-Interactions**
    - Studio-grade dark matte theme with glassmorphism HUD and responsive flex progress bars.
    - Smooth GSAP animations for chord modulation transitions, pop-in toasts, and modal interactions.
    - Click canvas to unleash repelling shockwaves with harmonic resonance.
 
-4. **Productivity & Focus Companion**
-   - Built-in **Pomodoro Focus Timer** (25m / 50m / 5m presets) with gentle arpeggio chime upon session completion.
+5. **Productivity & Focus Companion**
+   - Built-in **Timestamp-Accurate Pomodoro Focus Timer** (25m / 50m / 5m presets) with gentle arpeggio chime.
    - Speed multiplier and master volume sliders.
    - Spacebar shortcut to pause/resume anytime.
-
-5. **Zero-Build & Instant GitHub Pages Deployment**
-   - Single standalone `index.html` file. Works natively in any modern browser without npm or bundlers.
 
 ---
 
@@ -71,6 +73,7 @@ xdg-open index.html
 | Key | Action |
 |---|---|
 | `Space` | Toggle Play / Pause simulation |
+| `S` | Cycle through 4 Sound Styles |
 | `2` | Switch to 2-Ball Duel Mode |
 | `3` | Switch to 3-Ball Triad Mode |
 | `4` | Switch to 4-Ball Quadrant Mode |

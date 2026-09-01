@@ -317,6 +317,44 @@
       background: var(--accent-cyan);
     }
 
+    /* Sound Style Preset Dropdown */
+    .style-select-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .style-select-wrapper:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .style-dropdown {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .style-dropdown option {
+      background: #111728;
+      color: #f8fafc;
+      font-family: inherit;
+    }
+
     /* Pomodoro Clock Display */
     .pomo-capsule {
       display: flex;
@@ -521,6 +559,19 @@
 
       <div class="deck-divider"></div>
 
+      <!-- Sound Style Preset Selector -->
+      <div class="style-select-wrapper" title="Switch Soundscape Style & Voice Ensemble">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+        <select id="style-select" class="style-dropdown">
+          <option value="lofi">☕ Lo-Fi Study</option>
+          <option value="synthwave">🌌 Cyber Synth</option>
+          <option value="zen">🎋 Zen Garden</option>
+          <option value="chiptune">👾 8-Bit Arcade</option>
+        </select>
+      </div>
+
+      <div class="deck-divider"></div>
+
       <!-- Playback & Speed -->
       <div class="control-group">
         <button class="icon-btn" id="btn-pause" title="Toggle Play / Pause (Space)">
@@ -582,22 +633,99 @@
      * Multi-Faction (2, 3, 4 Teams) + Procedural Web Audio Synth + GSAP Animations
      */
 
-    // --- Color Palettes for up to 4 Teams ---
-    const TEAM_PALETTES = [
-      { id: 0, name: 'Amber Sunset', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', waveform: 'sine' },
-      { id: 1, name: 'Twilight Lavender', color: '#818cf8', glow: 'rgba(129, 140, 248, 0.5)', waveform: 'triangle' },
-      { id: 2, name: 'Emerald Sage', color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)', waveform: 'sine' },
-      { id: 3, name: 'Coral Rose', color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.5)', waveform: 'triangle' }
-    ];
+    // --- 4 Curated Soundscape Styles with Distinct Voice Ensembles ---
+    const SOUND_STYLES = {
+      lofi: {
+        id: 'lofi',
+        name: '☕ Lo-Fi Study',
+        description: 'Warm Rhodes, Upright Bass, Music Box & Pluck',
+        vinylDefault: true,
+        chords: [
+          { name: "Ebmaj9", baseFreqs: [155.56, 196.00, 233.08, 293.66, 349.23, 392.00, 466.16, 587.33] },
+          { name: "Cm7",    baseFreqs: [130.81, 155.56, 196.00, 233.08, 261.63, 311.13, 392.00, 466.16] },
+          { name: "Fm9",    baseFreqs: [174.61, 207.65, 261.63, 311.13, 349.23, 415.30, 523.25, 622.25] },
+          { name: "Bb13",   baseFreqs: [116.54, 146.83, 174.61, 207.65, 233.08, 293.66, 349.23, 466.16] }
+        ],
+        voices: [
+          // Ball 0: Warm Rhodes (Tenor/Chords)
+          { name: 'Warm Rhodes', mult: 1.0, oscType: 'sine', detune: 1.0025, filterStart: 1500, filterEnd: 320, attack: 0.008, decay: 1.35, gain: 0.24 },
+          // Ball 1: Upright Bass (Deep Sub Bass)
+          { name: 'Upright Bass', mult: 0.5, oscType: 'triangle', detune: 1.0, filterStart: 550, filterEnd: 180, attack: 0.015, decay: 1.6, gain: 0.35 },
+          // Ball 2: Music Box (Treble Sparkle)
+          { name: 'Music Box', mult: 2.0, oscType: 'sine', detune: 1.001, filterStart: 3500, filterEnd: 1200, attack: 0.004, decay: 0.9, gain: 0.18 },
+          // Ball 3: Muted Pluck (Acoustic Pluck)
+          { name: 'Muted Pluck', mult: 1.0, oscType: 'triangle', detune: 1.005, filterStart: 2400, filterEnd: 220, attack: 0.003, decay: 0.65, gain: 0.22 }
+        ]
+      },
+      synthwave: {
+        id: 'synthwave',
+        name: '🌌 Cyber Synth',
+        description: 'Analog Saw Lead, Reese Bass, FM Glass & Pluck',
+        vinylDefault: false,
+        chords: [
+          { name: "Dm9",    baseFreqs: [146.83, 174.61, 220.00, 261.63, 293.66, 349.23, 440.00, 523.25] },
+          { name: "Bbmaj7", baseFreqs: [116.54, 146.83, 174.61, 220.00, 233.08, 293.66, 349.23, 440.00] },
+          { name: "Gm7",    baseFreqs: [98.00,  123.47, 146.83, 174.61, 196.00, 246.94, 293.66, 349.23] },
+          { name: "A7b9",   baseFreqs: [110.00, 138.59, 164.81, 220.00, 233.08, 277.18, 329.63, 440.00] }
+        ],
+        voices: [
+          // Ball 0: 80s Analog Saw Lead
+          { name: 'Analog Lead', mult: 1.0, oscType: 'sawtooth', detune: 1.004, filterStart: 2800, filterEnd: 450, attack: 0.01, decay: 1.2, gain: 0.18 },
+          // Ball 1: Reese Sub Bass
+          { name: 'Reese Bass', mult: 0.5, oscType: 'sawtooth', detune: 1.008, filterStart: 650, filterEnd: 150, attack: 0.02, decay: 1.8, gain: 0.28 },
+          // Ball 2: FM Crystal Arp
+          { name: 'FM Glass Arp', mult: 2.0, oscType: 'sine', detune: 1.0, filterStart: 4500, filterEnd: 1800, attack: 0.005, decay: 1.1, gain: 0.16 },
+          // Ball 3: Neon Pluck
+          { name: 'Neon Pluck', mult: 1.0, oscType: 'square', detune: 1.003, filterStart: 3200, filterEnd: 280, attack: 0.004, decay: 0.5, gain: 0.14 }
+        ]
+      },
+      zen: {
+        id: 'zen',
+        name: '🎋 Zen Garden',
+        description: 'Plucked Koto, Bamboo Flute, Singing Bowl & Kalimba',
+        vinylDefault: false,
+        chords: [
+          { name: "D-Gong (宮)",  baseFreqs: [146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63, 392.00] },
+          { name: "G-Zhi (徵)",   baseFreqs: [196.00, 220.00, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25] },
+          { name: "A-Yu (羽)",    baseFreqs: [110.00, 130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66] },
+          { name: "C-Shang (商)", baseFreqs: [130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63] }
+        ],
+        voices: [
+          // Ball 0: Plucked Koto (古箏)
+          { name: 'Plucked Koto', mult: 1.0, oscType: 'triangle', detune: 1.003, filterStart: 2800, filterEnd: 300, attack: 0.006, decay: 1.4, gain: 0.25 },
+          // Ball 1: Bamboo Flute Drone (尺八/竹笛)
+          { name: 'Bamboo Drone', mult: 0.5, oscType: 'sine', detune: 1.001, filterStart: 800, filterEnd: 250, attack: 0.08, decay: 2.0, gain: 0.32 },
+          // Ball 2: Singing Bowl (頌缽/風鈴)
+          { name: 'Singing Bowl', mult: 2.0, oscType: 'sine', detune: 1.002, filterStart: 3200, filterEnd: 1500, attack: 0.02, decay: 2.2, gain: 0.16 },
+          // Ball 3: Wooden Kalimba (木質卡林巴)
+          { name: 'Kalimba', mult: 1.0, oscType: 'sine', detune: 1.001, filterStart: 1800, filterEnd: 200, attack: 0.003, decay: 0.7, gain: 0.28 }
+        ]
+      },
+      chiptune: {
+        id: 'chiptune',
+        name: '👾 8-Bit Arcade',
+        description: 'NES Square Lead, Triangle Bass, Pulse Arp & Blip',
+        vinylDefault: false,
+        chords: [
+          { name: "C-Major",  baseFreqs: [130.81, 164.81, 196.00, 261.63, 329.63, 392.00, 523.25, 659.25] },
+          { name: "G-Major",  baseFreqs: [98.00,  123.47, 146.83, 196.00, 246.94, 293.66, 392.00, 493.88] },
+          { name: "A-Minor",  baseFreqs: [110.00, 130.81, 164.81, 220.00, 261.63, 329.63, 440.00, 523.25] },
+          { name: "F-Major",  baseFreqs: [87.31,  110.00, 130.81, 174.61, 220.00, 261.63, 349.23, 440.00] }
+        ],
+        voices: [
+          // Ball 0: NES Square Lead (50% Pulse)
+          { name: 'Square Lead', mult: 1.0, oscType: 'square', detune: 1.0, filterStart: 6000, filterEnd: 2500, attack: 0.002, decay: 0.6, gain: 0.12 },
+          // Ball 1: NES Triangle Bass
+          { name: 'Triangle Bass', mult: 0.5, oscType: 'triangle', detune: 1.0, filterStart: 3000, filterEnd: 800, attack: 0.005, decay: 0.9, gain: 0.35 },
+          // Ball 2: 25% Pulse High Arpeggio
+          { name: 'Pulse Arp', mult: 2.0, oscType: 'square', detune: 1.002, filterStart: 8000, filterEnd: 4000, attack: 0.002, decay: 0.45, gain: 0.09 },
+          // Ball 3: Retro Blip / Coin
+          { name: 'Retro Blip', mult: 1.0, oscType: 'square', detune: 1.01, filterStart: 5000, filterEnd: 1200, attack: 0.002, decay: 0.35, gain: 0.11 }
+        ]
+      }
+    };
 
-    // Neo-Soul / Lo-Fi Harmonic Cycle (Ebmaj9 -> Cm7 -> Fm9 -> Bb13)
-    const CHORD_PROGRESSION = [
-      { name: "Ebmaj9", baseFreqs: [155.56, 196.00, 233.08, 293.66, 349.23, 392.00, 466.16, 587.33] },
-      { name: "Cm7",    baseFreqs: [130.81, 155.56, 196.00, 233.08, 261.63, 311.13, 392.00, 466.16] },
-      { name: "Fm9",    baseFreqs: [174.61, 207.65, 261.63, 311.13, 349.23, 415.30, 523.25, 622.25] },
-      { name: "Bb13",   baseFreqs: [116.54, 146.83, 174.61, 207.65, 233.08, 293.66, 349.23, 466.16] }
-    ];
-
+    let currentStyleId = 'lofi';
     const GRID_SIZE = 32;
     let teamCount = 2;
     let activeChordIndex = 0;
@@ -699,34 +827,37 @@
         if (!this.initialized || !this.ctx || this.ctx.state !== "running") return;
         const now = this.ctx.currentTime;
 
-        const palette = TEAM_PALETTES[teamIndex % TEAM_PALETTES.length];
+        const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
+        const voice = currentStyle.voices[teamIndex % currentStyle.voices.length];
+        const actualFreq = freq * (voice.mult || 1.0);
 
-        // Dual Oscillator with Chorus Detuning
+        // 1. Dual Oscillators with Voice Detune
         const osc1 = this.ctx.createOscillator();
         const osc2 = this.ctx.createOscillator();
 
-        osc1.type = palette.waveform;
-        osc2.type = "sine";
+        osc1.type = voice.oscType || 'sine';
+        osc2.type = voice.oscType === 'sawtooth' ? 'sawtooth' : 'sine';
 
-        osc1.frequency.setValueAtTime(freq, now);
-        osc2.frequency.setValueAtTime(freq * 1.0025, now);
+        osc1.frequency.setValueAtTime(actualFreq, now);
+        osc2.frequency.setValueAtTime(actualFreq * (voice.detune || 1.0025), now);
 
-        // Low-pass Filter Envelope
+        // 2. Dynamic Filter Envelope
         const filter = this.ctx.createBiquadFilter();
         filter.type = "lowpass";
-        filter.frequency.setValueAtTime(1500, now);
-        filter.frequency.exponentialRampToValueAtTime(320, now + 1.2);
+        filter.frequency.setValueAtTime(voice.filterStart || 1500, now);
+        filter.frequency.exponentialRampToValueAtTime(Math.max(60, voice.filterEnd || 320), now + (voice.decay || 1.2));
 
-        // Amplitude Envelope (ADSR)
+        // 3. Amplitude Envelope (ADSR)
         const gainNode = this.ctx.createGain();
         gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(0.24, now + 0.008);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.35);
+        gainNode.gain.linearRampToValueAtTime(voice.gain || 0.24, now + (voice.attack || 0.008));
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + (voice.decay || 1.35));
 
-        // Stereo Panning
+        // 4. Stereo Panning
         const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
         if (panner) panner.pan.setValueAtTime(pan, now);
 
+        // Routing
         osc1.connect(filter);
         osc2.connect(filter);
         filter.connect(gainNode);
@@ -742,8 +873,9 @@
 
         osc1.start(now);
         osc2.start(now);
-        osc1.stop(now + 1.4);
-        osc2.stop(now + 1.4);
+        const stopTime = now + (voice.decay || 1.35) + 0.1;
+        osc1.stop(stopTime);
+        osc2.stop(stopTime);
       }
 
       playChime() {
@@ -922,7 +1054,8 @@
     }
 
     function getNoteForCoord(row) {
-      const currentChord = CHORD_PROGRESSION[activeChordIndex];
+      const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
+      const currentChord = currentStyle.chords[activeChordIndex % currentStyle.chords.length];
       const freqs = currentChord.baseFreqs;
       const noteIdx = Math.floor((row / GRID_SIZE) * freqs.length) % freqs.length;
       return freqs[freqs.length - 1 - noteIdx];
@@ -980,11 +1113,12 @@
               chordHitsCounter++;
               if (chordHitsCounter >= CHORD_CHANGE_HITS) {
                 chordHitsCounter = 0;
-                activeChordIndex = (activeChordIndex + 1) % CHORD_PROGRESSION.length;
+                const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
+                activeChordIndex = (activeChordIndex + 1) % currentStyle.chords.length;
                 
                 // Animate Chord Switch with GSAP
                 const chordNameEl = document.getElementById('chord-name');
-                chordNameEl.innerText = CHORD_PROGRESSION[activeChordIndex].name;
+                chordNameEl.innerText = currentStyle.chords[activeChordIndex].name;
                 gsap.fromTo(chordNameEl, { scale: 1.4, color: '#f59e0b' }, { scale: 1.0, color: '#38bdf8', duration: 0.5, ease: "power2.out" });
               }
 
@@ -1277,6 +1411,29 @@
       triggerToast(enabled ? "Vinyl Crackle On ☕" : "Vinyl Crackle Muted");
     });
 
+    const styleSelect = document.getElementById('style-select');
+    styleSelect.addEventListener('change', (e) => {
+      currentStyleId = e.target.value;
+      activeChordIndex = 0;
+      chordHitsCounter = 0;
+      const selectedStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
+
+      // Update HUD chord display
+      const chordNameEl = document.getElementById('chord-name');
+      chordNameEl.innerText = selectedStyle.chords[0].name;
+      gsap.fromTo(chordNameEl, { scale: 1.4, color: '#f59e0b' }, { scale: 1.0, color: '#38bdf8', duration: 0.5, ease: "power2.out" });
+
+      // Automatically sync Vinyl noise default
+      if (selectedStyle.vinylDefault && !synth.isVinylEnabled) {
+        btnVinyl.click();
+      } else if (!selectedStyle.vinylDefault && synth.isVinylEnabled) {
+        btnVinyl.click();
+      }
+
+      // Show toast with voice details
+      triggerToast(`🎶 Style: ${selectedStyle.name} (${selectedStyle.description})`);
+    });
+
     // Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
@@ -1285,6 +1442,11 @@
       } else if (e.key === '2' || e.key === '3' || e.key === '4') {
         const btn = document.querySelector(`.mode-btn[data-teams="${e.key}"]`);
         if (btn) btn.click();
+      } else if (e.key === 's' || e.key === 'S') {
+        const styleKeys = Object.keys(SOUND_STYLES);
+        const nextIdx = (styleKeys.indexOf(currentStyleId) + 1) % styleKeys.length;
+        styleSelect.value = styleKeys[nextIdx];
+        styleSelect.dispatchEvent(new Event('change'));
       }
     });
 
