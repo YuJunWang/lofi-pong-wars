@@ -633,6 +633,14 @@
      * Multi-Faction (2, 3, 4 Teams) + Procedural Web Audio Synth + GSAP Animations
      */
 
+    // --- Team Color Palettes ---
+    const TEAM_PALETTES = [
+      { id: 0, name: 'Amber Sunset', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' },
+      { id: 1, name: 'Twilight Lavender', color: '#818cf8', glow: 'rgba(129, 140, 248, 0.5)' },
+      { id: 2, name: 'Emerald Sage', color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)' },
+      { id: 3, name: 'Coral Rose', color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.5)' }
+    ];
+
     // --- 4 Curated Soundscape Styles with Distinct Voice Ensembles ---
     const SOUND_STYLES = {
       lofi: {
@@ -745,41 +753,55 @@
       }
 
       init() {
-        if (this.initialized) return;
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        this.ctx = new AudioCtx();
+        if (this.initialized) {
+          if (this.ctx && this.ctx.state === "suspended") {
+            this.ctx.resume().catch(() => {});
+          }
+          return;
+        }
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
 
-        // Master Output Gain
-        this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+          // Master Output Gain
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
 
-        // Ambient Stereo Space / Delay Node
-        const delay = this.ctx.createDelay();
-        delay.delayTime.setValueAtTime(0.28, this.ctx.currentTime);
-        
-        const feedback = this.ctx.createGain();
-        feedback.gain.setValueAtTime(0.32, this.ctx.currentTime);
-        
-        const delayFilter = this.ctx.createBiquadFilter();
-        delayFilter.type = "lowpass";
-        delayFilter.frequency.setValueAtTime(1100, this.ctx.currentTime);
+          // Ambient Stereo Space / Delay Node
+          const delay = this.ctx.createDelay();
+          delay.delayTime.setValueAtTime(0.28, this.ctx.currentTime);
+          
+          const feedback = this.ctx.createGain();
+          feedback.gain.setValueAtTime(0.32, this.ctx.currentTime);
+          
+          const delayFilter = this.ctx.createBiquadFilter();
+          delayFilter.type = "lowpass";
+          delayFilter.frequency.setValueAtTime(1100, this.ctx.currentTime);
 
-        delay.connect(feedback);
-        feedback.connect(delayFilter);
-        delayFilter.connect(delay);
-        delayFilter.connect(this.masterGain);
+          delay.connect(feedback);
+          feedback.connect(delayFilter);
+          delayFilter.connect(delay);
+          delayFilter.connect(this.masterGain);
 
-        this.delaySend = this.ctx.createGain();
-        this.delaySend.gain.setValueAtTime(0.38, this.ctx.currentTime);
-        this.delaySend.connect(delay);
+          this.delaySend = this.ctx.createGain();
+          this.delaySend.gain.setValueAtTime(0.38, this.ctx.currentTime);
+          this.delaySend.connect(delay);
 
-        this.masterGain.connect(this.ctx.destination);
+          this.masterGain.connect(this.ctx.destination);
 
-        this.initVinyl();
-        this.initialized = true;
+          this.initVinyl();
+          this.initialized = true;
+
+          if (this.ctx.state === "suspended") {
+            this.ctx.resume().catch(() => {});
+          }
+        } catch (err) {
+          console.warn("AudioContext init error:", err);
+        }
       }
 
       initVinyl() {
+        if (!this.ctx) return;
         const bufferSize = this.ctx.sampleRate * 4;
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
@@ -824,7 +846,10 @@
       }
 
       playNote(freq, pan = 0, teamIndex = 0) {
-        if (!this.initialized || !this.ctx || this.ctx.state !== "running") return;
+        if (!this.initialized || !this.ctx) return;
+        if (this.ctx.state === "suspended") {
+          this.ctx.resume().catch(() => {});
+        }
         const now = this.ctx.currentTime;
 
         const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
@@ -1203,6 +1228,7 @@
     // --- Decoupled Engine Architecture (Background Tab Audio & Physics Support) ---
     // 1. Inline Web Worker for continuous physics & audio synthesis in background tabs
     let tickerWorker = null;
+    let workerActive = false;
     try {
       const workerBlob = new Blob([`
         let timer = null;
@@ -1223,6 +1249,7 @@
       `], { type: 'application/javascript' });
       tickerWorker = new Worker(URL.createObjectURL(workerBlob));
       tickerWorker.onmessage = function() {
+        workerActive = true;
         if (!isPaused) {
           updatePhysics();
         }
@@ -1237,8 +1264,8 @@
       if (document.visibilityState === 'visible') {
         render();
       }
-      // If Web Worker is unavailable in environment, fallback to running physics inside rAF
-      if (!tickerWorker && !isPaused) {
+      // If Web Worker is unavailable, fallback to running physics inside rAF
+      if (!workerActive && !isPaused) {
         updatePhysics();
       }
       requestAnimationFrame(renderLoop);
@@ -1364,20 +1391,30 @@
 
     function startExperience() {
       synth.init();
-      if (synth.ctx && synth.ctx.state === "suspended") synth.ctx.resume();
+      if (synth.ctx && synth.ctx.state === "suspended") {
+        synth.ctx.resume().catch(() => {});
+      }
       
-      gsap.to(startModal, {
-        autoAlpha: 0,
-        duration: 0.45,
-        ease: "power2.inOut",
-        onComplete: () => startModal.classList.add('hidden')
-      });
+      if (startModal) {
+        gsap.to(startModal, {
+          autoAlpha: 0,
+          duration: 0.4,
+          ease: "power2.inOut",
+          onComplete: () => {
+            startModal.classList.add('hidden');
+            startModal.style.display = 'none';
+          }
+        });
+      }
     }
 
-    startBtn.addEventListener('click', startExperience);
-    startModal.addEventListener('click', (e) => {
-      if (e.target === startModal) startExperience();
+    startBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      startExperience();
     });
+    startModal.addEventListener('click', startExperience);
+    window.addEventListener('pointerdown', startExperience, { once: true });
+    window.addEventListener('keydown', startExperience, { once: true });
 
     // Mode Selector (2 / 3 / 4 Balls)
     document.querySelectorAll('.mode-btn').forEach(btn => {
