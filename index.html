@@ -1066,11 +1066,50 @@
       }
     }
 
-    function loop() {
-      updatePhysics();
-      render();
-      requestAnimationFrame(loop);
+    // --- Decoupled Engine Architecture (Background Tab Audio & Physics Support) ---
+    // 1. Inline Web Worker for continuous physics & audio synthesis in background tabs
+    let tickerWorker = null;
+    try {
+      const workerBlob = new Blob([`
+        let timer = null;
+        self.onmessage = function(e) {
+          if (e.data === 'start') {
+            if (!timer) {
+              timer = setInterval(function() {
+                self.postMessage('tick');
+              }, 1000 / 60);
+            }
+          } else if (e.data === 'stop') {
+            if (timer) {
+              clearInterval(timer);
+              timer = null;
+            }
+          }
+        };
+      `], { type: 'application/javascript' });
+      tickerWorker = new Worker(URL.createObjectURL(workerBlob));
+      tickerWorker.onmessage = function() {
+        if (!isPaused) {
+          updatePhysics();
+        }
+      };
+      tickerWorker.postMessage('start');
+    } catch (err) {
+      console.warn('Web Worker fallback to rAF loop:', err);
     }
+
+    // 2. Render Loop (Canvas drawing runs via rAF; throttles gracefully when hidden to conserve GPU)
+    function renderLoop() {
+      if (document.visibilityState === 'visible') {
+        render();
+      }
+      // If Web Worker is unavailable in environment, fallback to running physics inside rAF
+      if (!tickerWorker && !isPaused) {
+        updatePhysics();
+      }
+      requestAnimationFrame(renderLoop);
+    }
+    requestAnimationFrame(renderLoop);
 
     // --- Interactive Waves ---
     canvas.addEventListener('pointerdown', (e) => {
@@ -1092,9 +1131,10 @@
       });
     });
 
-    // --- Pomodoro Focus Timer ---
-    let pomoMinutes = 25;
-    let pomoSeconds = 0;
+    // --- Pomodoro Focus Timer (Timestamp-Accurate Across Tab Switching) ---
+    let pomoDurationMinutes = 25;
+    let pomoEndTime = null;
+    let pomoRemainingSeconds = 25 * 60;
     let pomoTimer = null;
     let isPomoRunning = false;
 
@@ -1103,10 +1143,10 @@
     const pomoModeBtn = document.getElementById('btn-pomo-mode');
     const toast = document.getElementById('toast-msg');
 
-    function updatePomoText() {
-      const m = String(pomoMinutes).padStart(2, '0');
-      const s = String(pomoSeconds).padStart(2, '0');
-      pomoDisplay.innerText = `${m}:${s}`;
+    function updatePomoDisplay(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      pomoDisplay.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
     function triggerToast(msg) {
@@ -1120,6 +1160,23 @@
       }, 3500);
     }
 
+    function tickPomo() {
+      if (!isPomoRunning) return;
+      const now = Date.now();
+      const remainingMs = Math.max(0, pomoEndTime - now);
+      pomoRemainingSeconds = Math.ceil(remainingMs / 1000);
+      updatePomoDisplay(pomoRemainingSeconds);
+
+      if (pomoRemainingSeconds <= 0) {
+        clearInterval(pomoTimer);
+        isPomoRunning = false;
+        pomoToggleBtn.innerText = "Start Focus";
+        pomoToggleBtn.classList.remove('active');
+        synth.playChime();
+        triggerToast("🎉 Focus session complete! Time to stretch & hydrate ☕");
+      }
+    }
+
     pomoToggleBtn.addEventListener('click', () => {
       if (isPomoRunning) {
         clearInterval(pomoTimer);
@@ -1130,41 +1187,25 @@
         isPomoRunning = true;
         pomoToggleBtn.innerText = "Pause";
         pomoToggleBtn.classList.add('active');
-        pomoTimer = setInterval(() => {
-          if (pomoSeconds === 0) {
-            if (pomoMinutes === 0) {
-              clearInterval(pomoTimer);
-              isPomoRunning = false;
-              pomoToggleBtn.innerText = "Start Focus";
-              pomoToggleBtn.classList.remove('active');
-              synth.playChime();
-              triggerToast("🎉 Focus session complete! Time to stretch & hydrate ☕");
-              return;
-            }
-            pomoMinutes--;
-            pomoSeconds = 59;
-          } else {
-            pomoSeconds--;
-          }
-          updatePomoText();
-        }, 1000);
+        pomoEndTime = Date.now() + pomoRemainingSeconds * 1000;
+        pomoTimer = setInterval(tickPomo, 400);
       }
     });
 
     pomoModeBtn.addEventListener('click', () => {
       if (isPomoRunning) return;
-      if (pomoMinutes === 25) {
-        pomoMinutes = 50;
+      if (pomoDurationMinutes === 25) {
+        pomoDurationMinutes = 50;
         pomoModeBtn.innerText = "50m";
-      } else if (pomoMinutes === 50) {
-        pomoMinutes = 5;
+      } else if (pomoDurationMinutes === 50) {
+        pomoDurationMinutes = 5;
         pomoModeBtn.innerText = "5m";
       } else {
-        pomoMinutes = 25;
+        pomoDurationMinutes = 25;
         pomoModeBtn.innerText = "25m";
       }
-      pomoSeconds = 0;
-      updatePomoText();
+      pomoRemainingSeconds = pomoDurationMinutes * 60;
+      updatePomoDisplay(pomoRemainingSeconds);
     });
 
     // --- UI & Mode Switching ---
@@ -1254,7 +1295,6 @@
     // Initialization
     resizeCanvas();
     setupGridAndBalls();
-    loop();
   </script>
 </body>
 </html>
