@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Lo-Fi Pong Wars | Generative Soundscape & Territory Simulation</title>
   <meta name="description" content="A soothing zero-player canvas simulation combining generative Lo-Fi Rhodes synthesizer, dynamic jazz chord progressions, and multi-team territory battles for deep focus.">
   
@@ -17,11 +17,11 @@
   <style>
     :root {
       --bg-base: #090c15;
-      --bg-surface: rgba(16, 22, 36, 0.72);
-      --bg-surface-hover: rgba(26, 35, 56, 0.85);
+      --bg-surface: rgba(16, 22, 36, 0.76);
+      --bg-surface-hover: rgba(26, 35, 56, 0.9);
       --border-subtle: rgba(255, 255, 255, 0.08);
       --border-accent: rgba(56, 189, 248, 0.3);
-      --card-blur: 20px;
+      --card-blur: 24px;
 
       /* Team Palette */
       --team-amber: #f59e0b;
@@ -39,8 +39,14 @@
       --accent-cyan: #38bdf8;
       --radius-sm: 8px;
       --radius-md: 14px;
-      --radius-lg: 24px;
+      --radius-lg: 22px;
       --radius-full: 9999px;
+
+      /* Safe Area Variables */
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
     }
 
     * {
@@ -49,34 +55,44 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body, html {
       width: 100%;
       height: 100%;
+      height: 100dvh;
       overflow: hidden;
       background-color: var(--bg-base);
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       color: var(--text-main);
       -webkit-font-smoothing: antialiased;
+      touch-action: none;
     }
 
     #app-viewport {
       position: relative;
       width: 100vw;
+      width: 100dvw;
       height: 100vh;
+      height: 100dvh;
       display: flex;
       justify-content: center;
       align-items: center;
       background: radial-gradient(circle at center, #111728 0%, var(--bg-base) 100%);
+      padding: var(--sat) var(--sar) var(--sab) var(--sal);
+      overflow: hidden;
     }
 
     canvas {
       display: block;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--border-subtle);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px var(--border-subtle);
       border-radius: 0;
       cursor: crosshair;
+      touch-action: none;
+      -webkit-touch-callout: none;
       transition: transform 0.2s ease;
+      z-index: 10;
     }
 
     /* Ambient Background Pulse */
@@ -96,15 +112,16 @@
     /* Top HUD: Territory Bar & Active Harmonic Chord */
     .top-hud {
       position: absolute;
-      top: 24px;
+      top: calc(24px + var(--sat));
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       z-index: 20;
       pointer-events: none;
+      max-width: calc(100vw - 32px);
     }
 
     .territory-capsule {
@@ -117,15 +134,15 @@
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-full);
       padding: 6px 16px;
-      gap: 14px;
+      gap: 12px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     }
 
     .team-stat {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 13px;
+      gap: 5px;
+      font-size: 12px;
       font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
       letter-spacing: -0.2px;
@@ -145,7 +162,7 @@
     .dot-3 { background: var(--team-rose); box-shadow: 0 0 10px var(--team-rose-glow); }
 
     .ratio-track {
-      width: 140px;
+      width: 120px;
       height: 6px;
       background: rgba(255, 255, 255, 0.08);
       border-radius: var(--radius-full);
@@ -170,7 +187,7 @@
       font-size: 11px;
       font-weight: 600;
       color: var(--text-muted);
-      background: rgba(10, 14, 26, 0.6);
+      background: rgba(10, 14, 26, 0.65);
       backdrop-filter: blur(8px);
       padding: 4px 12px;
       border-radius: var(--radius-full);
@@ -188,7 +205,7 @@
     .mode-switcher {
       display: flex;
       align-items: center;
-      background: rgba(10, 14, 26, 0.8);
+      background: rgba(10, 14, 26, 0.85);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-full);
       padding: 3px;
@@ -201,10 +218,11 @@
       color: var(--text-subtle);
       font-size: 11px;
       font-weight: 700;
-      padding: 4px 10px;
+      padding: 5px 9px;
       border-radius: var(--radius-full);
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      min-height: 28px;
     }
 
     .mode-btn:hover {
@@ -218,24 +236,36 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
-    /* Floating Studio Control Deck */
+    /* Studio Control Deck (Responsive Dock + Drawer) */
     .control-deck {
       position: absolute;
-      bottom: 24px;
+      bottom: calc(24px + var(--sab));
       left: 50%;
       transform: translateX(-50%);
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .dock-main {
       background: var(--bg-surface);
       backdrop-filter: blur(var(--card-blur));
       -webkit-backdrop-filter: blur(var(--card-blur));
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      padding: 6px 14px;
       display: flex;
       align-items: center;
-      gap: 16px;
-      z-index: 20;
-      box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      gap: 10px;
+      box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+
+    .studio-drawer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .control-group {
@@ -246,22 +276,25 @@
 
     .deck-divider {
       width: 1px;
-      height: 22px;
+      height: 20px;
       background: var(--border-subtle);
+      flex-shrink: 0;
     }
 
     button.icon-btn {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border-subtle);
       color: var(--text-main);
-      padding: 7px 12px;
+      padding: 6px 12px;
       border-radius: var(--radius-sm);
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
+      min-height: 32px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -272,13 +305,17 @@
     }
 
     button.icon-btn:active {
-      transform: translateY(1px);
+      transform: scale(0.95);
     }
 
     button.icon-btn.active {
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(56, 189, 248, 0.16);
       border-color: var(--border-accent);
       color: var(--accent-cyan);
+    }
+
+    .studio-toggle-btn {
+      display: none; /* Desktop hidden */
     }
 
     .range-control {
@@ -294,17 +331,17 @@
 
     .range-control input[type="range"] {
       -webkit-appearance: none;
-      width: 64px;
+      width: 60px;
       height: 4px;
       border-radius: 2px;
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.14);
       outline: none;
     }
 
     .range-control input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       background: var(--text-main);
       cursor: pointer;
@@ -329,13 +366,13 @@
       font-size: 12px;
       font-weight: 600;
       color: var(--text-main);
+      min-height: 32px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .style-select-wrapper:hover {
       background: rgba(255, 255, 255, 0.1);
       border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-1px);
     }
 
     .style-dropdown {
@@ -362,10 +399,10 @@
       gap: 6px;
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12px;
       color: var(--accent-cyan);
       background: rgba(56, 189, 248, 0.08);
-      padding: 5px 10px;
+      padding: 5px 9px;
       border-radius: var(--radius-sm);
       border: 1px solid rgba(56, 189, 248, 0.2);
     }
@@ -373,8 +410,8 @@
     /* Top Corner Links */
     .github-badge {
       position: absolute;
-      top: 24px;
-      right: 24px;
+      top: calc(24px + var(--sat));
+      right: calc(24px + var(--sar));
       color: var(--text-muted);
       text-decoration: none;
       display: flex;
@@ -384,6 +421,7 @@
       font-weight: 600;
       background: var(--bg-surface);
       backdrop-filter: blur(var(--card-blur));
+      -webkit-backdrop-filter: blur(var(--card-blur));
       border: 1px solid var(--border-subtle);
       padding: 7px 14px;
       border-radius: var(--radius-full);
@@ -404,14 +442,15 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(9, 12, 21, 0.82);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(9, 12, 21, 0.84);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 50;
       cursor: pointer;
+      padding: 20px;
       transition: opacity 0.5s ease, visibility 0.5s ease;
     }
 
@@ -422,13 +461,14 @@
     }
 
     .start-card {
-      background: rgba(18, 24, 40, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 40px 48px;
-      border-radius: 28px;
+      background: rgba(18, 24, 40, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 36px 40px;
+      border-radius: 26px;
       text-align: center;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8);
-      max-width: 440px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85);
+      max-width: 420px;
+      width: 100%;
     }
 
     .modal-tag {
@@ -446,7 +486,7 @@
     }
 
     .start-title {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 800;
       margin-bottom: 12px;
       letter-spacing: -0.5px;
@@ -456,10 +496,10 @@
     }
 
     .start-description {
-      font-size: 14px;
+      font-size: 13.5px;
       color: var(--text-muted);
       line-height: 1.65;
-      margin-bottom: 28px;
+      margin-bottom: 26px;
     }
 
     .primary-btn {
@@ -467,7 +507,7 @@
       color: #090c15;
       font-weight: 700;
       font-size: 14px;
-      padding: 13px 32px;
+      padding: 13px 28px;
       border-radius: var(--radius-full);
       border: none;
       cursor: pointer;
@@ -486,13 +526,13 @@
     /* Toast Notification */
     .toast-pill {
       position: absolute;
-      top: 88px;
+      top: calc(82px + var(--sat));
       left: 50%;
       transform: translateX(-50%) translateY(-20px);
-      background: rgba(16, 22, 38, 0.95);
+      background: rgba(16, 22, 38, 0.96);
       border: 1px solid var(--border-accent);
       color: var(--text-main);
-      padding: 8px 20px;
+      padding: 8px 18px;
       border-radius: var(--radius-full);
       font-size: 12px;
       font-weight: 600;
@@ -500,20 +540,133 @@
       opacity: 0;
       z-index: 100;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      max-width: calc(100vw - 32px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
+    /* Responsive Mobile Overrides (iPhone, Android, Tablets) */
     @media (max-width: 768px) {
-      .control-deck {
-        flex-wrap: wrap;
-        width: calc(100vw - 32px);
-        justify-content: center;
-        gap: 10px;
-        padding: 10px;
-        bottom: 16px;
+      .top-hud {
+        top: calc(12px + var(--sat));
+        gap: 6px;
       }
-      .deck-divider { display: none; }
-      .github-badge { top: 12px; right: 12px; padding: 5px 10px; font-size: 11px; }
-      .top-hud { top: 16px; }
+      .territory-capsule {
+        padding: 5px 12px;
+        gap: 8px;
+      }
+      .team-stat {
+        font-size: 11px;
+        gap: 4px;
+      }
+      .ratio-track {
+        width: 80px;
+        height: 5px;
+      }
+      .chord-badge {
+        font-size: 10px;
+        padding: 3px 10px;
+      }
+      .github-badge {
+        top: calc(12px + var(--sat));
+        right: calc(12px + var(--sar));
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        justify-content: center;
+      }
+      .github-badge span {
+        display: none;
+      }
+
+      /* Floating Dock on Mobile */
+      .control-deck {
+        bottom: calc(14px + var(--sab));
+        width: calc(100vw - 20px);
+        max-width: 410px;
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .dock-main {
+        width: 100%;
+        justify-content: space-between;
+        padding: 6px 10px;
+        border-radius: var(--radius-full);
+      }
+      .mode-btn {
+        padding: 5px 8px;
+        font-size: 10.5px;
+      }
+      .btn-label-desktop {
+        display: none;
+      }
+      .studio-toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+      }
+
+      /* Expandable Studio Drawer on Mobile */
+      .studio-drawer {
+        background: rgba(16, 22, 36, 0.94);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: 0 14px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.65);
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+        pointer-events: none;
+        overflow: hidden;
+        transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .studio-drawer.open {
+        max-height: 220px;
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+        padding: 12px 14px;
+      }
+
+      .desktop-only-divider {
+        display: none;
+      }
+
+      .studio-drawer .control-group {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .studio-drawer .range-control input[type="range"] {
+        width: 90px;
+      }
+
+      .start-card {
+        padding: 28px 20px;
+        border-radius: 22px;
+      }
+      .start-title {
+        font-size: 22px;
+      }
+      .start-description {
+        font-size: 13px;
+        margin-bottom: 20px;
+      }
+      .primary-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+      }
     }
   </style>
 </head>
@@ -525,7 +678,7 @@
     <!-- Top HUD: Dynamic Territory Progress & Chord -->
     <div class="top-hud">
       <div class="territory-capsule" id="territory-capsule">
-        <div id="team-stats-container" style="display: flex; align-items: center; gap: 10px;">
+        <div id="team-stats-container" style="display: flex; align-items: center; gap: 8px;">
           <!-- Dynamically Injected Stats -->
         </div>
         <div class="ratio-track" id="ratio-track">
@@ -548,63 +701,78 @@
     <!-- Canvas Simulation -->
     <canvas id="stage"></canvas>
 
-    <!-- Bottom Studio Control Deck -->
+    <!-- Bottom Studio Control Deck (Responsive Dock + Drawer) -->
     <div class="control-deck" id="control-deck">
-      <!-- Team Count Selector -->
-      <div class="mode-switcher">
-        <button class="mode-btn active" data-teams="2">2 Balls</button>
-        <button class="mode-btn" data-teams="3">3 Balls</button>
-        <button class="mode-btn" data-teams="4">4 Balls</button>
-      </div>
+      <!-- 1. Permanent Primary Dock Bar -->
+      <div class="dock-main">
+        <!-- Team Count Selector -->
+        <div class="mode-switcher">
+          <button class="mode-btn active" data-teams="2">2P</button>
+          <button class="mode-btn" data-teams="3">3P</button>
+          <button class="mode-btn" data-teams="4">4P</button>
+        </div>
 
-      <div class="deck-divider"></div>
+        <div class="deck-divider"></div>
 
-      <!-- Sound Style Preset Selector -->
-      <div class="style-select-wrapper" title="Switch Soundscape Style & Voice Ensemble">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-        <select id="style-select" class="style-dropdown">
-          <option value="lofi">☕ Lo-Fi Study</option>
-          <option value="synthwave">🌌 Cyber Synth</option>
-          <option value="zen">🎋 Zen Garden</option>
-          <option value="chiptune">👾 8-Bit Arcade</option>
-        </select>
-      </div>
-
-      <div class="deck-divider"></div>
-
-      <!-- Playback & Speed -->
-      <div class="control-group">
+        <!-- Play / Pause -->
         <button class="icon-btn" id="btn-pause" title="Toggle Play / Pause (Space)">
           <span id="pause-icon">⏸</span>
-          <span id="pause-text">Pause</span>
+          <span id="pause-text" class="btn-label-desktop">Pause</span>
         </button>
-        <div class="range-control">
-          <span>Speed</span>
-          <input type="range" id="speed-slider" min="0.5" max="2.5" step="0.1" value="1.0">
+
+        <div class="deck-divider"></div>
+
+        <!-- Sound Style Preset Selector -->
+        <div class="style-select-wrapper" title="Switch Soundscape Style & Voice Ensemble">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+          <select id="style-select" class="style-dropdown">
+            <option value="lofi">☕ Lo-Fi</option>
+            <option value="synthwave">🌌 Synth</option>
+            <option value="zen">🎋 Zen</option>
+            <option value="chiptune">👾 8-Bit</option>
+          </select>
         </div>
+
+        <!-- Studio Drawer Toggle Button (Shown on mobile) -->
+        <button class="icon-btn studio-toggle-btn" id="btn-studio-toggle" title="Toggle Studio Settings">
+          <span>🎛️</span>
+        </button>
       </div>
 
-      <div class="deck-divider"></div>
+      <!-- 2. Expandable Studio & Focus Drawer -->
+      <div class="studio-drawer" id="studio-drawer">
+        <div class="deck-divider desktop-only-divider"></div>
 
-      <!-- Sound Controls -->
-      <div class="control-group">
-        <div class="range-control">
-          <span>Vol</span>
-          <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.7">
+        <!-- Playback Speed -->
+        <div class="control-group">
+          <div class="range-control">
+            <span>Speed</span>
+            <input type="range" id="speed-slider" min="0.5" max="2.5" step="0.1" value="1.0">
+          </div>
         </div>
-        <button class="icon-btn active" id="btn-vinyl" title="Toggle Vinyl Warmth">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
-          <span>Vinyl</span>
-        </button>
-      </div>
 
-      <div class="deck-divider"></div>
+        <div class="deck-divider desktop-only-divider"></div>
 
-      <!-- Pomodoro Focus Timer -->
-      <div class="control-group">
-        <div class="pomo-capsule" id="pomo-display">25:00</div>
-        <button class="icon-btn" id="btn-pomo-toggle">Start Focus</button>
-        <button class="icon-btn" id="btn-pomo-mode">25m</button>
+        <!-- Sound Volume & Vinyl -->
+        <div class="control-group">
+          <div class="range-control">
+            <span>Vol</span>
+            <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.7">
+          </div>
+          <button class="icon-btn active" id="btn-vinyl" title="Toggle Vinyl Warmth">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Vinyl</span>
+          </button>
+        </div>
+
+        <div class="deck-divider desktop-only-divider"></div>
+
+        <!-- Pomodoro Focus Timer -->
+        <div class="control-group">
+          <div class="pomo-capsule" id="pomo-display">25:00</div>
+          <button class="icon-btn" id="btn-pomo-toggle">Focus</button>
+          <button class="icon-btn" id="btn-pomo-mode">25m</button>
+        </div>
       </div>
     </div>
 
@@ -614,7 +782,7 @@
         <div class="modal-tag">Interactive Soundscape</div>
         <h1 class="start-title">Lo-Fi Pong Wars</h1>
         <p class="start-description">
-          An autonomous generative ambient simulation. Watch competing color factions battle for territory while synthesizing warm Rhodes chords in real-time.
+          An autonomous generative ambient simulation. Watch competing color factions battle for territory while synthesizing warm chords in real-time.
         </p>
         <button class="primary-btn" id="start-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -940,8 +1108,19 @@
     let speedMultiplier = 1.0;
 
     function resizeCanvas() {
-      const minDim = Math.min(window.innerWidth * 0.88, window.innerHeight * 0.74);
-      const size = Math.floor(Math.max(320, Math.min(minDim, 680)));
+      const isMobile = window.innerWidth <= 768;
+      // Get exact CSS safe area insets
+      const sat = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat')) || 0;
+      const sab = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab')) || 0;
+      
+      // Space budget: Top HUD + Bottom Dock + margins
+      const topBudget = isMobile ? (72 + sat) : 96;
+      const bottomBudget = isMobile ? (82 + sab) : 108;
+      const verticalAvailable = window.innerHeight - topBudget - bottomBudget;
+      const horizontalAvailable = window.innerWidth - (isMobile ? 24 : 48);
+
+      const minDim = Math.min(horizontalAvailable, verticalAvailable);
+      const size = Math.floor(Math.max(260, Math.min(minDim, 680)));
       width = size;
       height = size;
       tileSize = width / GRID_SIZE;
@@ -1314,14 +1493,22 @@
     }
     requestAnimationFrame(renderLoop);
 
-    // --- Interactive Waves ---
-    canvas.addEventListener('pointerdown', (e) => {
+    // --- Interactive Waves & Touch-drag Support ---
+    let isPointerInteracting = false;
+    let lastRippleTime = 0;
+
+    function triggerInteraction(clientX, clientY) {
       const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
+      const clickX = clientX - rect.left;
+      const clickY = clientY - rect.top;
+
+      if (clickX < 0 || clickX > width || clickY < 0 || clickY > height) return;
 
       addShockwave(clickX, clickY, '#38bdf8');
-      if (synth.initialized) synth.playNote(880, 0, 0);
+      if (synth.initialized) {
+        const pan = (clickX / width) * 1.6 - 0.8;
+        synth.playNote(880, pan, 0);
+      }
 
       balls.forEach(b => {
         const dx = b.x - clickX;
@@ -1332,7 +1519,24 @@
           b.dy += (dy / dist) * 2.2;
         }
       });
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+      isPointerInteracting = true;
+      triggerInteraction(e.clientX, e.clientY);
     });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!isPointerInteracting) return;
+      const now = performance.now();
+      if (now - lastRippleTime > 75) {
+        lastRippleTime = now;
+        triggerInteraction(e.clientX, e.clientY);
+      }
+    });
+
+    window.addEventListener('pointerup', () => { isPointerInteracting = false; });
+    window.addEventListener('pointercancel', () => { isPointerInteracting = false; });
 
     // --- Pomodoro Focus Timer (Timestamp-Accurate Across Tab Switching) ---
     let pomoDurationMinutes = 25;
@@ -1512,6 +1716,25 @@
       // Show toast with voice details
       triggerToast(`🎶 Style: ${selectedStyle.name} (${selectedStyle.description})`);
     });
+
+    // Studio Drawer Toggle (Mobile Floating Dock)
+    const btnStudioToggle = document.getElementById('btn-studio-toggle');
+    const studioDrawer = document.getElementById('studio-drawer');
+    if (btnStudioToggle && studioDrawer) {
+      btnStudioToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = studioDrawer.classList.toggle('open');
+        btnStudioToggle.classList.toggle('active', isOpen);
+      });
+
+      // Auto close drawer when tapping canvas
+      canvas.addEventListener('pointerdown', () => {
+        if (studioDrawer.classList.contains('open')) {
+          studioDrawer.classList.remove('open');
+          btnStudioToggle.classList.remove('active');
+        }
+      });
+    }
 
     // Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {
