@@ -840,16 +840,7 @@
           // Ball 3: Muted Pluck (Acoustic Pluck)
           { name: 'Muted Pluck', mult: 1.0, oscType: 'triangle', detune: 1.005, filterStart: 2400, filterEnd: 220, attack: 0.003, decay: 0.65, gain: 0.22 }
         ],
-        wallVoices: [
-          // Ball 0: Soft Wood Rimshot (溫暖木質敲擊)
-          { type: 'wood', freq: 560, decay: 0.045, gain: 0.10, filter: 1200 },
-          // Ball 1: Vinyl Sub Thump (鬆軟黑膠低音微震)
-          { type: 'sub', freq: 78, endFreq: 42, decay: 0.08, gain: 0.16, filter: 220 },
-          // Ball 2: Delicate Glass Ting (纖細玻璃高頻微碰)
-          { type: 'glass', freq: 2600, decay: 0.05, gain: 0.07, filter: 3200 },
-          // Ball 3: Brushed Noise Tap (復古毛刷輕掃)
-          { type: 'brush', freq: 1600, decay: 0.035, gain: 0.07, filter: 2400 }
-        ]
+        wallVoices: null // Pure pristine silence on wall bounces for meditation
       },
       synthwave: {
         id: 'synthwave',
@@ -904,16 +895,7 @@
           // Ball 3: Wooden Kalimba (木質卡林巴)
           { name: 'Kalimba', mult: 1.0, oscType: 'sine', detune: 1.001, filterStart: 1800, filterEnd: 200, attack: 0.003, decay: 0.7, gain: 0.28 }
         ],
-        wallVoices: [
-          // Ball 0: Bamboo Clack (竹板清脆碰擊)
-          { type: 'wood', freq: 780, decay: 0.05, gain: 0.11, filter: 1600 },
-          // Ball 1: Temple Wooden Fish (寺廟空靈木魚)
-          { type: 'wood', freq: 210, decay: 0.09, gain: 0.14, filter: 450 },
-          // Ball 2: Tiny Wind Chime Tap (藏風鈴微鳴)
-          { type: 'glass', freq: 3800, decay: 0.07, gain: 0.06, filter: 5000 },
-          // Ball 3: Waterdrop Plop (清晨水滴落水)
-          { type: 'water', freq: 1400, endFreq: 750, decay: 0.06, gain: 0.12, filter: 2000 }
-        ]
+        wallVoices: null // Pure pristine silence on wall bounces for Zen tranquility
       },
       chiptune: {
         id: 'chiptune',
@@ -1129,15 +1111,18 @@
       playWallHit(pan = 0, teamIndex = 0) {
         if (!this.initialized || !this.ctx || this.ctx.state !== 'running') return;
 
+        const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
+        // Silent wall bounce if style disabled wall percussion (e.g. Lo-Fi, Zen)
+        if (!currentStyle.wallVoices || currentStyle.wallVoices.length === 0) return;
+
         // Anti-machine gun throttle for wall hits (60ms per team)
         const now_ms = performance.now();
         if (now_ms - lastWallHitTimes[teamIndex % 4] < WALL_THROTTLE_MS) return;
         lastWallHitTimes[teamIndex % 4] = now_ms;
 
         const now = this.ctx.currentTime;
-        const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
-        const wallVoice = (currentStyle.wallVoices && currentStyle.wallVoices[teamIndex % currentStyle.wallVoices.length]) 
-          || { type: 'wood', freq: 560, decay: 0.045, gain: 0.08, filter: 1200 };
+        const wallVoice = currentStyle.wallVoices[teamIndex % currentStyle.wallVoices.length];
+        if (!wallVoice) return;
 
         const gainNode = this.ctx.createGain();
         const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
