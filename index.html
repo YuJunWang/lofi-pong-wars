@@ -839,6 +839,16 @@
           { name: 'Music Box', mult: 2.0, oscType: 'sine', detune: 1.001, filterStart: 3500, filterEnd: 1200, attack: 0.004, decay: 0.9, gain: 0.18 },
           // Ball 3: Muted Pluck (Acoustic Pluck)
           { name: 'Muted Pluck', mult: 1.0, oscType: 'triangle', detune: 1.005, filterStart: 2400, filterEnd: 220, attack: 0.003, decay: 0.65, gain: 0.22 }
+        ],
+        wallVoices: [
+          // Ball 0: Soft Wood Rimshot (溫暖木質敲擊)
+          { type: 'wood', freq: 560, decay: 0.045, gain: 0.10, filter: 1200 },
+          // Ball 1: Vinyl Sub Thump (鬆軟黑膠低音微震)
+          { type: 'sub', freq: 78, endFreq: 42, decay: 0.08, gain: 0.16, filter: 220 },
+          // Ball 2: Delicate Glass Ting (纖細玻璃高頻微碰)
+          { type: 'glass', freq: 2600, decay: 0.05, gain: 0.07, filter: 3200 },
+          // Ball 3: Brushed Noise Tap (復古毛刷輕掃)
+          { type: 'brush', freq: 1600, decay: 0.035, gain: 0.07, filter: 2400 }
         ]
       },
       synthwave: {
@@ -861,6 +871,16 @@
           { name: 'FM Glass Arp', mult: 2.0, oscType: 'sine', detune: 1.0, filterStart: 4500, filterEnd: 1800, attack: 0.005, decay: 1.1, gain: 0.16 },
           // Ball 3: Neon Pluck
           { name: 'Neon Pluck', mult: 1.0, oscType: 'square', detune: 1.003, filterStart: 3200, filterEnd: 280, attack: 0.004, decay: 0.5, gain: 0.14 }
+        ],
+        wallVoices: [
+          // Ball 0: Cyber Click (短促類比點擊)
+          { type: 'click', freq: 1100, decay: 0.03, gain: 0.09, filter: 2800 },
+          // Ball 1: 808 Sub Tap (808 低音小敲)
+          { type: 'sub', freq: 90, endFreq: 45, decay: 0.09, gain: 0.18, filter: 250 },
+          // Ball 2: Metallic Ping (金屬水晶高音)
+          { type: 'glass', freq: 3400, decay: 0.04, gain: 0.07, filter: 4500 },
+          // Ball 3: Neon Closed Hat (霓虹閉鈸)
+          { type: 'brush', freq: 4800, decay: 0.025, gain: 0.06, filter: 6000 }
         ]
       },
       zen: {
@@ -883,6 +903,16 @@
           { name: 'Singing Bowl', mult: 2.0, oscType: 'sine', detune: 1.002, filterStart: 3200, filterEnd: 1500, attack: 0.02, decay: 2.2, gain: 0.16 },
           // Ball 3: Wooden Kalimba (木質卡林巴)
           { name: 'Kalimba', mult: 1.0, oscType: 'sine', detune: 1.001, filterStart: 1800, filterEnd: 200, attack: 0.003, decay: 0.7, gain: 0.28 }
+        ],
+        wallVoices: [
+          // Ball 0: Bamboo Clack (竹板清脆碰擊)
+          { type: 'wood', freq: 780, decay: 0.05, gain: 0.11, filter: 1600 },
+          // Ball 1: Temple Wooden Fish (寺廟空靈木魚)
+          { type: 'wood', freq: 210, decay: 0.09, gain: 0.14, filter: 450 },
+          // Ball 2: Tiny Wind Chime Tap (藏風鈴微鳴)
+          { type: 'glass', freq: 3800, decay: 0.07, gain: 0.06, filter: 5000 },
+          // Ball 3: Waterdrop Plop (清晨水滴落水)
+          { type: 'water', freq: 1400, endFreq: 750, decay: 0.06, gain: 0.12, filter: 2000 }
         ]
       },
       chiptune: {
@@ -905,6 +935,16 @@
           { name: 'Pulse Arp', mult: 2.0, oscType: 'square', detune: 1.002, filterStart: 8000, filterEnd: 4000, attack: 0.002, decay: 0.45, gain: 0.09 },
           // Ball 3: Retro Blip / Coin
           { name: 'Retro Blip', mult: 1.0, oscType: 'square', detune: 1.01, filterStart: 5000, filterEnd: 1200, attack: 0.002, decay: 0.35, gain: 0.11 }
+        ],
+        wallVoices: [
+          // Ball 0: NES Soft Pop (像素微啵聲)
+          { type: 'click', freq: 520, decay: 0.02, gain: 0.08, filter: 3000 },
+          // Ball 1: NES Triangle Kick (像素三角小踩鼓)
+          { type: 'sub', freq: 110, endFreq: 40, decay: 0.06, gain: 0.20, filter: 600 },
+          // Ball 2: Pixel Coin Blip (金幣微嗶)
+          { type: 'glass', freq: 2200, decay: 0.025, gain: 0.06, filter: 4000 },
+          // Ball 3: NES Noise Snare (短促噪聲小軍鼓)
+          { type: 'brush', freq: 2400, decay: 0.03, gain: 0.07, filter: 3500 }
         ]
       }
     };
@@ -1086,6 +1126,79 @@
         osc2.stop(stopTime);
       }
 
+      playWallHit(pan = 0, teamIndex = 0) {
+        if (!this.initialized || !this.ctx || this.ctx.state !== 'running') return;
+
+        // Anti-machine gun throttle for wall hits (60ms per team)
+        const now_ms = performance.now();
+        if (now_ms - lastWallHitTimes[teamIndex % 4] < WALL_THROTTLE_MS) return;
+        lastWallHitTimes[teamIndex % 4] = now_ms;
+
+        const now = this.ctx.currentTime;
+        const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
+        const wallVoice = (currentStyle.wallVoices && currentStyle.wallVoices[teamIndex % currentStyle.wallVoices.length]) 
+          || { type: 'wood', freq: 560, decay: 0.045, gain: 0.08, filter: 1200 };
+
+        const gainNode = this.ctx.createGain();
+        const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
+        if (panner) panner.pan.setValueAtTime(pan, now);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = (wallVoice.type === 'brush') ? 'bandpass' : 'lowpass';
+        filter.frequency.setValueAtTime(wallVoice.filter || 1500, now);
+
+        // Amplitude Envelope (Short Percussive Decay)
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(wallVoice.gain || 0.08, now + 0.002);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + (wallVoice.decay || 0.05));
+
+        if (wallVoice.type === 'brush') {
+          // Micro-noise burst (hi-hat / brushed snare / shaker)
+          const bufferSize = Math.max(256, Math.floor(this.ctx.sampleRate * (wallVoice.decay || 0.04)));
+          const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const output = noiseBuffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+          }
+          const whiteNoise = this.ctx.createBufferSource();
+          whiteNoise.buffer = noiseBuffer;
+          whiteNoise.connect(filter);
+          filter.connect(gainNode);
+          if (panner) {
+            gainNode.connect(panner);
+            panner.connect(this.masterGain);
+          } else {
+            gainNode.connect(this.masterGain);
+          }
+          whiteNoise.start(now);
+          whiteNoise.stop(now + (wallVoice.decay || 0.04) + 0.02);
+        } else {
+          // Tone / Sub / Click / Water drop oscillator
+          const osc = this.ctx.createOscillator();
+          osc.type = (wallVoice.type === 'sub' || wallVoice.type === 'water') ? 'sine' 
+                   : (wallVoice.type === 'wood') ? 'triangle' 
+                   : (wallVoice.type === 'click' && currentStyleId === 'chiptune') ? 'square' 
+                   : 'sine';
+
+          osc.frequency.setValueAtTime(wallVoice.freq || 440, now);
+          if (wallVoice.endFreq) {
+            osc.frequency.exponentialRampToValueAtTime(wallVoice.endFreq, now + (wallVoice.decay || 0.05));
+          }
+
+          osc.connect(filter);
+          filter.connect(gainNode);
+          if (panner) {
+            gainNode.connect(panner);
+            panner.connect(this.masterGain);
+          } else {
+            gainNode.connect(this.masterGain);
+          }
+
+          osc.start(now);
+          osc.stop(now + (wallVoice.decay || 0.05) + 0.02);
+        }
+      }
+
       playChime() {
         if (!this.initialized) return;
         const notes = [523.25, 659.25, 783.99, 1046.50];
@@ -1100,6 +1213,9 @@
     // --- Per-ball audio throttle timestamps (Risk B) ---
     const lastNoteTimes = [0, 0, 0, 0];
     const NOTE_THROTTLE_MS = 40;
+
+    const lastWallHitTimes = [0, 0, 0, 0];
+    const WALL_THROTTLE_MS = 60;
 
     // --- Canvas & Simulation State ---
     const canvas = document.getElementById('stage');
@@ -1302,20 +1418,33 @@
         ball.y += ball.dy * speedMultiplier;
 
         // Boundary Bounces
+        let hitWall = false;
+        let wallPan = (ball.x / width) * 1.6 - 0.8;
+
         if (ball.x - ball.radius < 0) {
           ball.x = ball.radius;
           ball.dx = Math.abs(ball.dx);
+          hitWall = true;
+          wallPan = -0.85;
         } else if (ball.x + ball.radius > width) {
           ball.x = width - ball.radius;
           ball.dx = -Math.abs(ball.dx);
+          hitWall = true;
+          wallPan = 0.85;
         }
 
         if (ball.y - ball.radius < 0) {
           ball.y = ball.radius;
           ball.dy = Math.abs(ball.dy);
+          hitWall = true;
         } else if (ball.y + ball.radius > height) {
           ball.y = height - ball.radius;
           ball.dy = -Math.abs(ball.dy);
+          hitWall = true;
+        }
+
+        if (hitWall) {
+          synth.playWallHit(wallPan, ball.team);
         }
 
         // Risk A: Clamp speed after every step
