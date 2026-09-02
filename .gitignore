@@ -6,4 +6,6 @@ Thumbs.db
 scratch/
 *.webm
 *.mp4
+!pic/demo.mp4
+
 
