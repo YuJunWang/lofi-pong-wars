@@ -3,3 +3,7 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+scratch/
+*.webm
+*.mp4
+
