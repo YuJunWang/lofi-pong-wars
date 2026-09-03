@@ -285,6 +285,10 @@ canvas {
 
 /* Floating Studio Popover Console (Option 1) */
 .studio-popover {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(14px) scale(0.96);
   pointer-events: none;
   width: 460px;
   max-width: calc(100vw - 32px);
@@ -299,13 +303,15 @@ canvas {
   flex-direction: column;
   gap: 14px;
   opacity: 0;
-  transform: translateY(14px) scale(0.96);
-  transition: opacity 0.26s cubic-bezier(0.16, 1, 0.3, 1), transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  visibility: hidden;
+  transition: opacity 0.26s cubic-bezier(0.16, 1, 0.3, 1), transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.26s;
+  z-index: 50;
 }
 
 .studio-popover.open {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
   pointer-events: auto;
 }
 
@@ -787,30 +793,65 @@ button.icon-btn.active {
     padding: 3px 10px;
   }
 
-  /* Floating Dock on Mobile */
+  /* Floating Dock on Mobile - Perfectly Pinned to Bottom */
   .control-deck {
     bottom: calc(12px + var(--sab));
     width: calc(100vw - 16px);
-    max-width: 460px;
-    flex-direction: column-reverse;
+    max-width: 480px;
     align-items: center;
-    gap: 8px;
   }
   .dock-main {
-    width: 100%;
-    justify-content: space-between;
-    padding: 5px 8px;
+    width: auto;
+    max-width: calc(100vw - 16px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 6px;
+    gap: 3px;
     border-radius: var(--radius-full);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .dock-main::-webkit-scrollbar {
+    display: none;
+  }
+  .deck-divider {
+    height: 12px;
+    margin: 0 1px;
+    flex-shrink: 0;
   }
   .mode-switcher {
     padding: 2px;
     gap: 1px;
+    flex-shrink: 0;
   }
   .mode-btn {
-    padding: 4px 6px;
-    font-size: 10px;
-    min-width: 24px;
-    min-height: 26px;
+    padding: 2px 4px;
+    font-size: 9.5px;
+    min-width: 19px;
+    min-height: 22px;
+  }
+  .style-select-wrapper {
+    padding: 2px 5px;
+    min-height: 24px;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .style-select-wrapper svg {
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+  }
+  .style-dropdown {
+    font-size: 9.5px;
+    max-width: 50px;
+    white-space: nowrap;
+  }
+  button.icon-btn {
+    padding: 3px 6px;
+    min-height: 24px;
+    flex-shrink: 0;
   }
   .btn-label-desktop {
     display: none;
@@ -822,8 +863,18 @@ button.icon-btn.active {
     padding: 4px 8px;
   }
   .studio-popover {
-    width: 100%;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px) scale(0.96);
+    width: calc(100vw - 20px);
+    max-width: 420px;
     padding: 14px 16px;
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+  .studio-popover.open {
+    transform: translateX(-50%) translateY(0) scale(1);
   }
   .popover-body {
     grid-template-columns: 1fr;
