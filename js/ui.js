@@ -52,8 +52,10 @@ let lastRippleTime = 0;
 
 function triggerInteraction(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
-  const clickX = clientX - rect.left;
-  const clickY = clientY - rect.top;
+  const scaleX = canvas.width / (rect.width || 1);
+  const scaleY = canvas.height / (rect.height || 1);
+  const clickX = (clientX - rect.left) * scaleX;
+  const clickY = (clientY - rect.top) * scaleY;
 
   if (clickX < 0 || clickX > width || clickY < 0 || clickY > height) return;
 
@@ -370,14 +372,15 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Window Resize
+// Window Resize (Preserves active battle state via proportional coordinate scaling)
 window.addEventListener('resize', () => {
   resizeCanvas();
-  setupGridAndBalls();
 });
 
 // --- Initial Startup ---
-resizeCanvas();
-setPalette('sunset');
-setupGridAndBalls();
-updateHUDStructure();
+function initApp() {
+  resizeCanvas();
+  setPalette('sunset');
+  setupGridAndBalls();
+}
+initApp();

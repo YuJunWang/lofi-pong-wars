@@ -20,16 +20,6 @@
   --team-5: #fbbf24;
   --team-5-glow: rgba(251, 191, 36, 0.5);
 
-  /* Legacy aliases for backward compatibility */
-  --team-amber: var(--team-0);
-  --team-amber-glow: var(--team-0-glow);
-  --team-lavender: var(--team-1);
-  --team-lavender-glow: var(--team-1-glow);
-  --team-emerald: var(--team-2);
-  --team-emerald-glow: var(--team-2-glow);
-  --team-rose: var(--team-3);
-  --team-rose-glow: var(--team-3-glow);
-
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --text-subtle: #64748b;

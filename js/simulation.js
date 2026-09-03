@@ -28,6 +28,7 @@ function resizeCanvas() {
   const maxAvail = Math.min(window.innerWidth - 32, window.innerHeight - padding);
   const size = Math.max(300, Math.min(640, maxAvail));
 
+  const oldTileSize = tileSize;
   width = size;
   height = size;
   tileSize = width / GRID_SIZE;
@@ -36,6 +37,15 @@ function resizeCanvas() {
   canvas.height = size;
   canvas.style.width = `${size}px`;
   canvas.style.height = `${size}px`;
+
+  // Scale existing balls proportionally to prevent wiping battles on resize
+  if (oldTileSize && oldTileSize > 0 && balls && balls.length > 0) {
+    const scale = tileSize / oldTileSize;
+    for (const ball of balls) {
+      ball.x *= scale;
+      ball.y *= scale;
+    }
+  }
 }
 
 function getRandomVelocity(baseSpeed = 3.2, variance = 0.6) {
@@ -372,6 +382,17 @@ function updatePhysics() {
     p.alpha *= p.life;
     if (p.alpha < 0.05) particles.splice(i, 1);
   }
+
+  // Prune expired inkBlooms and cap buffer to prevent background tab memory buildup
+  const now = performance.now();
+  for (let i = inkBlooms.length - 1; i >= 0; i--) {
+    if (now - inkBlooms[i].startTime >= inkBlooms[i].duration) {
+      inkBlooms.splice(i, 1);
+    }
+  }
+  if (inkBlooms.length > 40) {
+    inkBlooms.splice(0, inkBlooms.length - 40);
+  }
 }
 
 function render() {
@@ -565,7 +586,9 @@ try {
       }
     };
   `], { type: 'application/javascript' });
-  tickerWorker = new Worker(URL.createObjectURL(workerBlob));
+  const workerUrl = URL.createObjectURL(workerBlob);
+  tickerWorker = new Worker(workerUrl);
+  URL.revokeObjectURL(workerUrl);
   tickerWorker.onmessage = function() {
     workerActive = true;
     if (!isPaused) {

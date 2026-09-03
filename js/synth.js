@@ -13,6 +13,10 @@ class LoFiSynth {
     this.isVinylEnabled = true;
     this.volume = 0.7;
     this.initialized = false;
+    this.lastNoteTimes = [0, 0, 0, 0, 0, 0];
+    this.noteThrottleMs = 40;
+    this.lastWallHitTimes = [0, 0, 0, 0, 0, 0];
+    this.wallThrottleMs = 60;
   }
 
   init() {
@@ -118,8 +122,8 @@ class LoFiSynth {
     // Throttle per-team note rate to prevent AudioNode overload
     const now_ms = performance.now();
     const tIdx = teamIndex % 6;
-    if (now_ms - lastNoteTimes[tIdx] < NOTE_THROTTLE_MS) return;
-    lastNoteTimes[tIdx] = now_ms;
+    if (now_ms - this.lastNoteTimes[tIdx] < this.noteThrottleMs) return;
+    this.lastNoteTimes[tIdx] = now_ms;
 
     const now = this.ctx.currentTime;
     const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
@@ -182,8 +186,8 @@ class LoFiSynth {
     // Anti-machine gun throttle for wall hits (60ms per team)
     const now_ms = performance.now();
     const tIdx = teamIndex % 6;
-    if (now_ms - lastWallHitTimes[tIdx] < WALL_THROTTLE_MS) return;
-    lastWallHitTimes[tIdx] = now_ms;
+    if (now_ms - this.lastWallHitTimes[tIdx] < this.wallThrottleMs) return;
+    this.lastWallHitTimes[tIdx] = now_ms;
 
     const now = this.ctx.currentTime;
     const wallVoice = currentStyle.wallVoices[teamIndex % currentStyle.wallVoices.length];
@@ -258,9 +262,3 @@ class LoFiSynth {
 
 const synth = new LoFiSynth();
 
-// Audio throttle timestamps (supports up to 6 teams)
-const lastNoteTimes = [0, 0, 0, 0, 0, 0];
-const NOTE_THROTTLE_MS = 40;
-
-const lastWallHitTimes = [0, 0, 0, 0, 0, 0];
-const WALL_THROTTLE_MS = 60;
