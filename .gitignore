@@ -8,4 +8,5 @@ scratch/
 *.mp4
 !pic/demo.mp4
 
-
+# Local LLM-Wiki knowledge drafts (private to local machine)
+wiki_draft*.md
