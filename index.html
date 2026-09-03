@@ -762,6 +762,22 @@
 
         <div class="deck-divider desktop-only-divider"></div>
 
+        <!-- Color Palette Theme Selector -->
+        <div class="control-group">
+          <div class="style-select-wrapper" title="Switch Color Palette (Press P)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0 0 20c1.5 0 2.5-1 2.5-2.5 0-.7-.3-1.4-.8-1.9-.5-.5-.7-1.2-.7-1.9 0-1.7 1.3-3 3-3h2c2.8 0 5-2.2 5-5 0-4.4-4.5-8-11-8z"></path></svg>
+            <select id="palette-select" class="style-dropdown">
+              <option value="sunset">🌅 Sunset</option>
+              <option value="cyber">🌃 Cyber</option>
+              <option value="matcha">🍵 Matcha</option>
+              <option value="nordic">❄️ Nordic</option>
+              <option value="mocha">☕ Mocha</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="deck-divider desktop-only-divider"></div>
+
         <!-- Pomodoro Focus Timer -->
         <div class="control-group">
           <div class="pomo-capsule" id="pomo-display">25:00</div>
@@ -809,13 +825,91 @@
      * Multi-Faction (2, 3, 4 Teams) + Procedural Web Audio Synth + GSAP Animations
      */
 
-    // --- Team Color Palettes ---
-    const TEAM_PALETTES = [
-      { id: 0, name: 'Amber Sunset', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' },
-      { id: 1, name: 'Twilight Lavender', color: '#818cf8', glow: 'rgba(129, 140, 248, 0.5)' },
-      { id: 2, name: 'Emerald Sage', color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)' },
-      { id: 3, name: 'Coral Rose', color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.5)' }
-    ];
+    // --- 5 Curated Aesthetic Color Palettes ---
+    const COLOR_PALETTES = {
+      sunset: {
+        id: 'sunset',
+        name: '🌅 Sunset Lo-Fi',
+        teams: [
+          { id: 0, name: 'Amber Sunset', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' },
+          { id: 1, name: 'Twilight Lavender', color: '#818cf8', glow: 'rgba(129, 140, 248, 0.5)' },
+          { id: 2, name: 'Emerald Sage', color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)' },
+          { id: 3, name: 'Coral Rose', color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.5)' }
+        ]
+      },
+      cyber: {
+        id: 'cyber',
+        name: '🌃 Cyber Neon',
+        teams: [
+          { id: 0, name: 'Electric Cyan', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.5)' },
+          { id: 1, name: 'Neon Magenta', color: '#ec4899', glow: 'rgba(236, 72, 153, 0.5)' },
+          { id: 2, name: 'Acid Lime', color: '#84cc16', glow: 'rgba(132, 204, 22, 0.5)' },
+          { id: 3, name: 'Solar Yellow', color: '#eab308', glow: 'rgba(234, 179, 8, 0.5)' }
+        ]
+      },
+      matcha: {
+        id: 'matcha',
+        name: '🍵 Uji Matcha',
+        teams: [
+          { id: 0, name: 'Matcha Green', color: '#65a30d', glow: 'rgba(101, 163, 13, 0.5)' },
+          { id: 1, name: 'Sakura Petal', color: '#f472b6', glow: 'rgba(244, 114, 182, 0.5)' },
+          { id: 2, name: 'Genmaicha Gold', color: '#d97706', glow: 'rgba(217, 119, 6, 0.5)' },
+          { id: 3, name: 'Yozakura Slate', color: '#a78bfa', glow: 'rgba(167, 139, 250, 0.5)' }
+        ]
+      },
+      nordic: {
+        id: 'nordic',
+        name: '❄️ Nordic Pastel',
+        teams: [
+          { id: 0, name: 'Glacial Ice', color: '#38bdf8', glow: 'rgba(56, 189, 248, 0.5)' },
+          { id: 1, name: 'Arctic Peach', color: '#fb923c', glow: 'rgba(251, 146, 60, 0.5)' },
+          { id: 2, name: 'Mint Frost', color: '#34d399', glow: 'rgba(52, 211, 153, 0.5)' },
+          { id: 3, name: 'Soft Orchid', color: '#c084fc', glow: 'rgba(192, 132, 252, 0.5)' }
+        ]
+      },
+      mocha: {
+        id: 'mocha',
+        name: '☕ Warm Mocha',
+        teams: [
+          { id: 0, name: 'Warm Caramel', color: '#ea580c', glow: 'rgba(234, 88, 12, 0.5)' },
+          { id: 1, name: 'Oat Milk', color: '#cbd5e1', glow: 'rgba(203, 213, 225, 0.5)' },
+          { id: 2, name: 'Espresso Roast', color: '#ca8a04', glow: 'rgba(202, 138, 4, 0.5)' },
+          { id: 3, name: 'Berry Plum', color: '#db2777', glow: 'rgba(219, 39, 119, 0.5)' }
+        ]
+      }
+    };
+
+    let currentPaletteId = 'sunset';
+    let TEAM_PALETTES = COLOR_PALETTES[currentPaletteId].teams;
+
+    function setPalette(paletteId) {
+      if (!COLOR_PALETTES[paletteId]) return;
+      currentPaletteId = paletteId;
+      TEAM_PALETTES = COLOR_PALETTES[paletteId].teams;
+
+      // Update CSS variables for UI elements (capsule dots and ratio segments)
+      const root = document.documentElement;
+      root.style.setProperty('--team-amber', TEAM_PALETTES[0].color);
+      root.style.setProperty('--team-amber-glow', TEAM_PALETTES[0].glow);
+      root.style.setProperty('--team-lavender', TEAM_PALETTES[1].color);
+      root.style.setProperty('--team-lavender-glow', TEAM_PALETTES[1].glow);
+      root.style.setProperty('--team-emerald', TEAM_PALETTES[2].color);
+      root.style.setProperty('--team-emerald-glow', TEAM_PALETTES[2].glow);
+      root.style.setProperty('--team-rose', TEAM_PALETTES[3].color);
+      root.style.setProperty('--team-rose-glow', TEAM_PALETTES[3].glow);
+
+      // Update active balls palettes
+      if (balls && balls.length > 0) {
+        for (const ball of balls) {
+          if (ball) ball.palette = TEAM_PALETTES[ball.team % TEAM_PALETTES.length];
+        }
+      }
+
+      const paletteSelect = document.getElementById('palette-select');
+      if (paletteSelect && paletteSelect.value !== paletteId) {
+        paletteSelect.value = paletteId;
+      }
+    }
 
     // --- 4 Curated Soundscape Styles with Distinct Voice Ensembles ---
     const SOUND_STYLES = {
@@ -1241,6 +1335,22 @@
       canvas.style.height = height + 'px';
     }
 
+    function getRandomVelocity(baseSpeed = 3.2, variance = 0.6) {
+      let angle;
+      do {
+        angle = Math.random() * Math.PI * 2;
+        const mod = angle % (Math.PI / 2);
+        // Avoid purely horizontal/vertical paths (within 18 deg = 0.31 rad)
+        if (mod > 0.31 && mod < (Math.PI / 2 - 0.31)) break;
+      } while (true);
+
+      const spd = baseSpeed + (Math.random() - 0.5) * variance;
+      return {
+        dx: Math.cos(angle) * spd,
+        dy: Math.sin(angle) * spd
+      };
+    }
+
     // Set up Grid Territory according to Team Count (2, 3, or 4)
     function setupGridAndBalls() {
       grid = [];
@@ -1253,8 +1363,17 @@
           if (teamCount === 2) {
             grid[r][c] = c < GRID_SIZE / 2 ? 0 : 1;
           } else if (teamCount === 3) {
-            if (c < Math.floor(GRID_SIZE / 3)) grid[r][c] = 0;
-            else if (c < Math.floor(GRID_SIZE * 2 / 3)) grid[r][c] = 1;
+            // Symmetrical 3-Sector Y-partition (Mercedes-Benz 120° distribution)
+            // Sector 0 (Bottom-Right): 341 cells (33.3%)
+            // Sector 1 (Left): 340 cells (33.2%)
+            // Sector 2 (Top-Right): 343 cells (33.5%)
+            const dy = r - 15.5;
+            const dx = c - 15.5;
+            let ang = Math.atan2(dy, dx);
+            if (ang < 0) ang += Math.PI * 2;
+
+            if (ang < 2.155) grid[r][c] = 0;
+            else if (ang < 4.115) grid[r][c] = 1;
             else grid[r][c] = 2;
           } else if (teamCount === 4) {
             const isTop = r < GRID_SIZE / 2;
@@ -1267,49 +1386,59 @@
         }
       }
 
-      // Initialize Balls in Opposite Enemy Territory
+      // Initialize Balls in Opposite Enemy Territory with Random Initial Velocities
       if (teamCount === 2) {
+        const v0 = getRandomVelocity(3.2, 0.6);
+        const v1 = getRandomVelocity(3.2, 0.6);
         balls.push({
           x: (GRID_SIZE * 0.75) * tileSize,
           y: (GRID_SIZE * 0.5) * tileSize,
-          dx: -3.2, dy: 3.2, radius: 7.5, team: 0,
+          dx: v0.dx, dy: v0.dy, radius: 7.5, team: 0,
           palette: TEAM_PALETTES[0]
         });
         balls.push({
           x: (GRID_SIZE * 0.25) * tileSize,
           y: (GRID_SIZE * 0.5) * tileSize,
-          dx: 3.2, dy: -3.2, radius: 7.5, team: 1,
+          dx: v1.dx, dy: v1.dy, radius: 7.5, team: 1,
           palette: TEAM_PALETTES[1]
         });
       } else if (teamCount === 3) {
+        const v0 = getRandomVelocity(3.1, 0.5);
+        const v1 = getRandomVelocity(3.1, 0.5);
+        const v2 = getRandomVelocity(3.1, 0.5);
+        // Each ball starts in opposing enemy sector
         balls.push({
-          x: (GRID_SIZE * 0.5) * tileSize, y: (GRID_SIZE * 0.25) * tileSize,
-          dx: -3.0, dy: 3.0, radius: 7.5, team: 0, palette: TEAM_PALETTES[0]
+          x: 5.3 * tileSize, y: 15.6 * tileSize,
+          dx: v0.dx, dy: v0.dy, radius: 7.5, team: 0, palette: TEAM_PALETTES[0]
         });
         balls.push({
-          x: (GRID_SIZE * 0.85) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
-          dx: -3.2, dy: -2.8, radius: 7.5, team: 1, palette: TEAM_PALETTES[1]
+          x: 20.5 * tileSize, y: 6.8 * tileSize,
+          dx: v1.dx, dy: v1.dy, radius: 7.5, team: 1, palette: TEAM_PALETTES[1]
         });
         balls.push({
-          x: (GRID_SIZE * 0.15) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
-          dx: 3.2, dy: -3.0, radius: 7.5, team: 2, palette: TEAM_PALETTES[2]
+          x: 20.6 * tileSize, y: 24.2 * tileSize,
+          dx: v2.dx, dy: v2.dy, radius: 7.5, team: 2, palette: TEAM_PALETTES[2]
         });
       } else if (teamCount === 4) {
+        const v0 = getRandomVelocity(3.0, 0.5);
+        const v1 = getRandomVelocity(3.0, 0.5);
+        const v2 = getRandomVelocity(3.0, 0.5);
+        const v3 = getRandomVelocity(3.0, 0.5);
         balls.push({
           x: (GRID_SIZE * 0.75) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
-          dx: -3.0, dy: -3.0, radius: 7, team: 0, palette: TEAM_PALETTES[0]
+          dx: v0.dx, dy: v0.dy, radius: 7, team: 0, palette: TEAM_PALETTES[0]
         });
         balls.push({
           x: (GRID_SIZE * 0.25) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
-          dx: 3.0, dy: -3.0, radius: 7, team: 1, palette: TEAM_PALETTES[1]
+          dx: v1.dx, dy: v1.dy, radius: 7, team: 1, palette: TEAM_PALETTES[1]
         });
         balls.push({
           x: (GRID_SIZE * 0.75) * tileSize, y: (GRID_SIZE * 0.25) * tileSize,
-          dx: -3.0, dy: 3.0, radius: 7, team: 2, palette: TEAM_PALETTES[2]
+          dx: v2.dx, dy: v2.dy, radius: 7, team: 2, palette: TEAM_PALETTES[2]
         });
         balls.push({
           x: (GRID_SIZE * 0.25) * tileSize, y: (GRID_SIZE * 0.25) * tileSize,
-          dx: 3.0, dy: 3.0, radius: 7, team: 3, palette: TEAM_PALETTES[3]
+          dx: v3.dx, dy: v3.dy, radius: 7, team: 3, palette: TEAM_PALETTES[3]
         });
       }
 
@@ -1529,7 +1658,7 @@
       ctx.fillRect(0, 0, width, height);
 
       // 2. Organic Territory with Auto-Tiling Filleted Corners
-      const R = Math.floor(tileSize * 0.44); // ~8px smooth fillet radius
+      const R = Math.max(4, Math.floor(tileSize * 0.44)); // Smooth fillet radius
 
       const isSameTeam = (r, c, team) => {
         if (r < 0 || r >= GRID_SIZE || c < 0 || c >= GRID_SIZE) return false;
@@ -1538,19 +1667,24 @@
 
       for (let r = 0; r < GRID_SIZE; r++) {
         if (!grid[r]) continue;
+        const y0 = Math.floor(r * tileSize);
+        const y1 = Math.floor((r + 1) * tileSize);
+
         for (let c = 0; c < GRID_SIZE; c++) {
           const t = grid[r][c];
           if (t === undefined || !TEAM_PALETTES[t % TEAM_PALETTES.length]) continue;
 
-          const x = c * tileSize;
-          const y = r * tileSize;
-          const w = tileSize + 0.3; // Subpixel expansion to avoid hairline seams between same-team tiles
-          const h = tileSize + 0.3;
+          const x0 = Math.floor(c * tileSize);
+          const x1 = Math.floor((c + 1) * tileSize);
 
           const upSame = isSameTeam(r - 1, c, t);
           const downSame = isSameTeam(r + 1, c, t);
           const leftSame = isSameTeam(r, c - 1, t);
           const rightSame = isSameTeam(r, c + 1, t);
+
+          // Overlap by 1 full integer pixel ONLY if adjacent neighbor is same team
+          const w = (x1 - x0) + (rightSame ? 1 : 0);
+          const h = (y1 - y0) + (downSame ? 1 : 0);
 
           // Convex (exterior) corner fillets
           const rTL = (!upSame && !leftSame) ? R : 0;
@@ -1562,47 +1696,43 @@
 
           // Main tile body with convex fillets
           ctx.beginPath();
-          ctx.roundRect(x, y, w, h, [rTL, rTR, rBR, rBL]);
+          ctx.roundRect(x0, y0, w, h, [rTL, rTR, rBR, rBL]);
           ctx.fill();
 
           // Concave (interior) corner fillets to smoothly bridge corner transitions
           // Top-Left inner fillet
           if (upSame && leftSame && !isSameTeam(r - 1, c - 1, t)) {
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - R, y);
-            ctx.arcTo(x, y, x, y - R, R);
+            ctx.moveTo(x0, y0);
+            ctx.lineTo(x0 - R, y0);
+            ctx.arcTo(x0, y0, x0, y0 - R, R);
             ctx.closePath();
             ctx.fill();
           }
           // Top-Right inner fillet
           if (upSame && rightSame && !isSameTeam(r - 1, c + 1, t)) {
-            const rx = x + tileSize;
             ctx.beginPath();
-            ctx.moveTo(rx, y);
-            ctx.lineTo(rx + R, y);
-            ctx.arcTo(rx, y, rx, y - R, R);
+            ctx.moveTo(x1, y0);
+            ctx.lineTo(x1 + R, y0);
+            ctx.arcTo(x1, y0, x1, y0 - R, R);
             ctx.closePath();
             ctx.fill();
           }
           // Bottom-Right inner fillet
           if (downSame && rightSame && !isSameTeam(r + 1, c + 1, t)) {
-            const rx = x + tileSize;
-            const by = y + tileSize;
             ctx.beginPath();
-            ctx.moveTo(rx, by);
-            ctx.lineTo(rx + R, by);
-            ctx.arcTo(rx, by, rx, by + R, R);
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1 + R, y1);
+            ctx.arcTo(x1, y1, x1, y1 + R, R);
             ctx.closePath();
             ctx.fill();
           }
           // Bottom-Left inner fillet
           if (downSame && leftSame && !isSameTeam(r + 1, c - 1, t)) {
-            const by = y + tileSize;
             ctx.beginPath();
-            ctx.moveTo(x, by);
-            ctx.lineTo(x - R, by);
-            ctx.arcTo(x, by, x, by + R, R);
+            ctx.moveTo(x0, y1);
+            ctx.lineTo(x0 - R, y1);
+            ctx.arcTo(x0, y1, x0, y1 + R, R);
             ctx.closePath();
             ctx.fill();
           }
@@ -1959,6 +2089,15 @@
       triggerToast(`🎶 Style: ${selectedStyle.name} (${selectedStyle.description})`);
     });
 
+    // Palette Selector Dropdown
+    const paletteSelect = document.getElementById('palette-select');
+    if (paletteSelect) {
+      paletteSelect.addEventListener('change', (e) => {
+        setPalette(e.target.value);
+        triggerToast(`🎨 Palette: ${COLOR_PALETTES[e.target.value].name}`);
+      });
+    }
+
     // Studio Drawer Toggle (Mobile Floating Dock)
     const btnStudioToggle = document.getElementById('btn-studio-toggle');
     const studioDrawer = document.getElementById('studio-drawer');
@@ -1991,6 +2130,12 @@
         const nextIdx = (styleKeys.indexOf(currentStyleId) + 1) % styleKeys.length;
         styleSelect.value = styleKeys[nextIdx];
         styleSelect.dispatchEvent(new Event('change'));
+      } else if (e.key === 'p' || e.key === 'P') {
+        const palKeys = Object.keys(COLOR_PALETTES);
+        const nextIdx = (palKeys.indexOf(currentPaletteId) + 1) % palKeys.length;
+        const nextPal = palKeys[nextIdx];
+        setPalette(nextPal);
+        triggerToast(`🎨 Palette: ${COLOR_PALETTES[nextPal].name}`);
       }
     });
 
