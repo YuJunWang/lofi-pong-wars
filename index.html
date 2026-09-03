@@ -15,7 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <!-- Modular Design System Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=2.0.3">
+  <link rel="stylesheet" href="css/style.css?v=2.0.4">
 </head>
 <body>
 
@@ -90,6 +90,14 @@
                 <span id="vinyl-status">Active</span>
               </button>
             </div>
+
+            <div class="popover-row row-between">
+              <span class="row-title">Phantom Mode</span>
+              <button class="icon-btn" id="btn-balls" title="Hide/Show Balls (Press B)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                <span id="balls-status">Visible</span>
+              </button>
+            </div>
           </div>
 
           <!-- Column 2: Focus & Shortcuts -->
@@ -113,6 +121,7 @@
               <div class="shortcut-tag"><kbd>2-6</kbd><span>Factions</span></div>
               <div class="shortcut-tag"><kbd>S</kbd><span>Sound</span></div>
               <div class="shortcut-tag"><kbd>P</kbd><span>Palette</span></div>
+              <div class="shortcut-tag"><kbd>B</kbd><span>Phantom</span></div>
             </div>
           </div>
         </div>
@@ -211,9 +220,9 @@
   </div>
 
   <!-- Classical Zero-Build JavaScript Modules (100% file:// compatible) -->
-  <script src="js/config.js?v=2.0.3"></script>
-  <script src="js/synth.js?v=2.0.3"></script>
-  <script src="js/simulation.js?v=2.0.3"></script>
-  <script src="js/ui.js?v=2.0.3"></script>
+  <script src="js/config.js?v=2.0.4"></script>
+  <script src="js/synth.js?v=2.0.4"></script>
+  <script src="js/simulation.js?v=2.0.4"></script>
+  <script src="js/ui.js?v=2.0.4"></script>
 </body>
 </html>

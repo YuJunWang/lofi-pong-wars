@@ -21,6 +21,7 @@ let isPaused = false;
 let speedMultiplier = 1.0;
 let activeChordIndex = 0;
 let chordHitsCounter = 0;
+let showBalls = true;
 
 function resizeCanvas() {
   const isMobile = window.innerWidth <= 768;
@@ -535,33 +536,37 @@ function render() {
     ctx.globalAlpha = 1.0;
   }
 
-  // 5. Particles
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    ctx.fillStyle = p.color;
-    ctx.globalAlpha = p.alpha;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1.0;
+  // 5. Particles (Skipped in Phantom Mode for clean organic morphing)
+  if (showBalls) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+    }
   }
 
-  // 6. Glowing Balls
-  for (const ball of balls) {
-    if (!ball || !ball.palette) continue;
-    ctx.save();
-    ctx.shadowColor = ball.palette.glow;
-    ctx.shadowBlur = 18;
-    ctx.fillStyle = ball.palette.color;
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-    ctx.fill();
+  // 6. Glowing Balls (Hidden in Phantom Mode / Monochrome Minimal)
+  if (showBalls) {
+    for (const ball of balls) {
+      if (!ball || !ball.palette) continue;
+      ctx.save();
+      ctx.shadowColor = ball.palette.glow;
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = ball.palette.color;
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fill();
 
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(ball.x - ball.radius * 0.28, ball.y - ball.radius * 0.28, ball.radius * 0.35, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(ball.x - ball.radius * 0.28, ball.y - ball.radius * 0.28, ball.radius * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
   }
 }
 

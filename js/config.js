@@ -59,6 +59,7 @@ const COLOR_PALETTES = {
   mono: {
     id: 'mono',
     name: 'Monochrome Minimal',
+    hideBalls: true,
     teams: [
       { id: 0, name: 'Paper White', color: '#ffffff', glow: 'rgba(255, 255, 255, 0.7)' },
       { id: 1, name: 'Pitch Obsidian', color: '#18181b', glow: 'rgba(255, 255, 255, 0.35)' },
@@ -78,6 +79,12 @@ function setPalette(paletteId) {
   if (!COLOR_PALETTES[paletteId]) return;
   currentPaletteId = paletteId;
   TEAM_PALETTES = COLOR_PALETTES[paletteId].teams;
+
+  // Sync ball visibility if palette specifies default
+  if (typeof showBalls !== 'undefined') {
+    showBalls = !COLOR_PALETTES[paletteId].hideBalls;
+    if (typeof updateBallsUI === 'function') updateBallsUI();
+  }
 
   // Update CSS variables for UI elements (capsule dots and ratio segments)
   const root = document.documentElement;

@@ -272,6 +272,33 @@ if (btnVinyl) {
   });
 }
 
+const btnBalls = document.getElementById('btn-balls');
+const ballsStatus = document.getElementById('balls-status');
+
+function updateBallsUI() {
+  if (btnBalls && ballsStatus) {
+    if (showBalls) {
+      btnBalls.classList.remove('active');
+      ballsStatus.innerText = "Visible";
+    } else {
+      btnBalls.classList.add('active');
+      ballsStatus.innerText = "Hidden";
+    }
+  }
+}
+
+function toggleShowBalls() {
+  showBalls = !showBalls;
+  updateBallsUI();
+  triggerToast(showBalls ? "Balls: Visible" : "Phantom Mode: Balls Hidden");
+}
+
+if (btnBalls) {
+  btnBalls.addEventListener('click', () => {
+    toggleShowBalls();
+  });
+}
+
 const styleSelect = document.getElementById('style-select');
 if (styleSelect) {
   styleSelect.addEventListener('change', (e) => {
@@ -369,6 +396,8 @@ window.addEventListener('keydown', (e) => {
     const nextPal = palKeys[nextIdx];
     setPalette(nextPal);
     triggerToast(`Theme: ${COLOR_PALETTES[nextPal].name}`);
+  } else if (e.key === 'b' || e.key === 'B') {
+    toggleShowBalls();
   }
 });
 
