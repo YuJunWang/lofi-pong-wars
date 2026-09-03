@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Lo-Fi Pong Wars | Generative Soundscape & Territory Simulation</title>
+  <title>Lo-Fi Pong Wars | Generative Soundscape & Multi-Faction Territory</title>
   <meta name="description" content="A soothing zero-player canvas simulation combining generative Lo-Fi Rhodes synthesizer, dynamic jazz chord progressions, and multi-team territory battles for deep focus.">
   
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
@@ -14,662 +14,8 @@
   <!-- GSAP Animation Engine -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
-  <style>
-    :root {
-      --bg-base: #090c15;
-      --bg-surface: rgba(16, 22, 36, 0.76);
-      --bg-surface-hover: rgba(26, 35, 56, 0.9);
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-accent: rgba(56, 189, 248, 0.3);
-      --card-blur: 24px;
-
-      /* Team Palette */
-      --team-amber: #f59e0b;
-      --team-amber-glow: rgba(245, 158, 11, 0.5);
-      --team-lavender: #818cf8;
-      --team-lavender-glow: rgba(129, 140, 248, 0.5);
-      --team-emerald: #10b981;
-      --team-emerald-glow: rgba(16, 185, 129, 0.5);
-      --team-rose: #f43f5e;
-      --team-rose-glow: rgba(244, 63, 94, 0.5);
-
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-subtle: #64748b;
-      --accent-cyan: #38bdf8;
-      --radius-sm: 8px;
-      --radius-md: 14px;
-      --radius-lg: 22px;
-      --radius-full: 9999px;
-
-      /* Safe Area Variables */
-      --sat: env(safe-area-inset-top, 0px);
-      --sab: env(safe-area-inset-bottom, 0px);
-      --sal: env(safe-area-inset-left, 0px);
-      --sar: env(safe-area-inset-right, 0px);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body, html {
-      width: 100%;
-      height: 100%;
-      height: 100dvh;
-      overflow: hidden;
-      background-color: var(--bg-base);
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: var(--text-main);
-      -webkit-font-smoothing: antialiased;
-      touch-action: none;
-    }
-
-    #app-viewport {
-      position: relative;
-      width: 100vw;
-      width: 100dvw;
-      height: 100vh;
-      height: 100dvh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: radial-gradient(circle at center, #111728 0%, var(--bg-base) 100%);
-      padding: var(--sat) var(--sar) var(--sab) var(--sal);
-      overflow: hidden;
-    }
-
-    canvas {
-      display: block;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px var(--border-subtle);
-      border-radius: 0;
-      cursor: crosshair;
-      touch-action: none;
-      -webkit-touch-callout: none;
-      transition: transform 0.2s ease;
-      z-index: 10;
-    }
-
-    /* Ambient Background Pulse */
-    .ambient-glow {
-      position: absolute;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      filter: blur(140px);
-      opacity: 0.18;
-      pointer-events: none;
-      z-index: 1;
-      transition: background 1.2s ease;
-      background: radial-gradient(circle, var(--team-amber) 0%, transparent 70%);
-    }
-
-    /* Top HUD: Territory Bar & Active Harmonic Chord */
-    .top-hud {
-      position: absolute;
-      top: calc(24px + var(--sat));
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      z-index: 20;
-      pointer-events: none;
-      max-width: calc(100vw - 32px);
-    }
-
-    .territory-capsule {
-      pointer-events: auto;
-      display: flex;
-      align-items: center;
-      background: var(--bg-surface);
-      backdrop-filter: blur(var(--card-blur));
-      -webkit-backdrop-filter: blur(var(--card-blur));
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-full);
-      padding: 6px 16px;
-      gap: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    }
-
-    .team-stat {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: -0.2px;
-      transition: color 0.3s;
-    }
-
-    .stat-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      transition: box-shadow 0.3s ease, background-color 0.3s ease;
-    }
-
-    .dot-0 { background: var(--team-amber); box-shadow: 0 0 10px var(--team-amber-glow); }
-    .dot-1 { background: var(--team-lavender); box-shadow: 0 0 10px var(--team-lavender-glow); }
-    .dot-2 { background: var(--team-emerald); box-shadow: 0 0 10px var(--team-emerald-glow); }
-    .dot-3 { background: var(--team-rose); box-shadow: 0 0 10px var(--team-rose-glow); }
-
-    .ratio-track {
-      width: 120px;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: var(--radius-full);
-      overflow: hidden;
-      display: flex;
-    }
-
-    .ratio-segment {
-      height: 100%;
-      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .seg-0 { background: var(--team-amber); }
-    .seg-1 { background: var(--team-lavender); }
-    .seg-2 { background: var(--team-emerald); }
-    .seg-3 { background: var(--team-rose); }
-
-    .chord-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      background: rgba(10, 14, 26, 0.65);
-      backdrop-filter: blur(8px);
-      padding: 4px 12px;
-      border-radius: var(--radius-full);
-      border: 1px solid var(--border-subtle);
-      letter-spacing: 0.5px;
-    }
-
-    .chord-name {
-      color: var(--accent-cyan);
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-    }
-
-    /* Mode Switcher Pill (2P / 3P / 4P) */
-    .mode-switcher {
-      display: flex;
-      align-items: center;
-      background: rgba(10, 14, 26, 0.85);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-full);
-      padding: 3px;
-      gap: 2px;
-    }
-
-    .mode-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-subtle);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 5px 9px;
-      border-radius: var(--radius-full);
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      min-height: 28px;
-    }
-
-    .mode-btn:hover {
-      color: var(--text-main);
-    }
-
-    .mode-btn.active {
-      background: var(--bg-surface-hover);
-      color: var(--text-main);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    /* Studio Control Deck (Responsive Dock + Drawer) */
-    .control-deck {
-      position: absolute;
-      bottom: calc(24px + var(--sab));
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 30;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.3s ease;
-    }
-
-    .dock-main {
-      background: var(--bg-surface);
-      backdrop-filter: blur(var(--card-blur));
-      -webkit-backdrop-filter: blur(var(--card-blur));
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-full);
-      padding: 6px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
-    }
-
-    .studio-drawer {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .deck-divider {
-      width: 1px;
-      height: 20px;
-      background: var(--border-subtle);
-      flex-shrink: 0;
-    }
-
-    button.icon-btn {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-main);
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      min-height: 32px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    button.icon-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-1px);
-    }
-
-    button.icon-btn:active {
-      transform: scale(0.95);
-    }
-
-    button.icon-btn.active {
-      background: rgba(56, 189, 248, 0.16);
-      border-color: var(--border-accent);
-      color: var(--accent-cyan);
-    }
-
-    .studio-toggle-btn {
-      display: none; /* Desktop hidden */
-    }
-
-    .range-control {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .range-control input[type="range"] {
-      -webkit-appearance: none;
-      width: 60px;
-      height: 4px;
-      border-radius: 2px;
-      background: rgba(255, 255, 255, 0.14);
-      outline: none;
-    }
-
-    .range-control input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--text-main);
-      cursor: pointer;
-      transition: transform 0.15s ease, background-color 0.15s ease;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    }
-
-    .range-control input[type="range"]::-webkit-slider-thumb:hover {
-      transform: scale(1.25);
-      background: var(--accent-cyan);
-    }
-
-    /* Sound Style Preset Dropdown */
-    .style-select-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 5px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-main);
-      min-height: 32px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .style-select-wrapper:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .style-dropdown {
-      background: transparent;
-      border: none;
-      color: var(--text-main);
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 600;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .style-dropdown option {
-      background: #111728;
-      color: #f8fafc;
-      font-family: inherit;
-    }
-
-    /* Pomodoro Clock Display */
-    .pomo-capsule {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      font-size: 12px;
-      color: var(--accent-cyan);
-      background: rgba(56, 189, 248, 0.08);
-      padding: 5px 9px;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-    }
-
-    /* Subtle Credit Link in Studio Drawer */
-    .credit-link {
-      color: var(--text-subtle);
-      text-decoration: none;
-      font-size: 11px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 5px 9px;
-      border-radius: var(--radius-sm);
-      opacity: 0.65;
-      transition: all 0.2s ease;
-      min-height: 28px;
-    }
-
-    .credit-link:hover {
-      color: var(--text-main);
-      opacity: 1;
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    .attribution-note {
-      margin-top: 22px;
-      font-size: 11.5px;
-      color: var(--text-subtle);
-      letter-spacing: 0.2px;
-    }
-
-    .attribution-note a {
-      color: var(--accent-cyan);
-      text-decoration: none;
-      font-weight: 600;
-      transition: opacity 0.2s;
-    }
-
-    .attribution-note a:hover {
-      text-decoration: underline;
-    }
-
-    /* Start / Audio Unlock Overlay */
-    .start-modal {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(9, 12, 21, 0.84);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 50;
-      cursor: pointer;
-      padding: 20px;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-
-    .start-modal.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .start-card {
-      background: rgba(18, 24, 40, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 36px 40px;
-      border-radius: 26px;
-      text-align: center;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85);
-      max-width: 420px;
-      width: 100%;
-    }
-
-    .modal-tag {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--accent-cyan);
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      padding: 4px 12px;
-      border-radius: var(--radius-full);
-      margin-bottom: 16px;
-      text-transform: uppercase;
-    }
-
-    .start-title {
-      font-size: 26px;
-      font-weight: 800;
-      margin-bottom: 12px;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .start-description {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      line-height: 1.65;
-      margin-bottom: 26px;
-    }
-
-    .primary-btn {
-      background: linear-gradient(135deg, #f59e0b 0%, #818cf8 100%);
-      color: #090c15;
-      font-weight: 700;
-      font-size: 14px;
-      padding: 13px 28px;
-      border-radius: var(--radius-full);
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35);
-      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .primary-btn:hover {
-      transform: scale(1.04);
-      box-shadow: 0 8px 30px rgba(129, 140, 248, 0.45);
-    }
-
-    /* Toast Notification */
-    .toast-pill {
-      position: absolute;
-      top: calc(82px + var(--sat));
-      left: 50%;
-      transform: translateX(-50%) translateY(-20px);
-      background: rgba(16, 22, 38, 0.96);
-      border: 1px solid var(--border-accent);
-      color: var(--text-main);
-      padding: 8px 18px;
-      border-radius: var(--radius-full);
-      font-size: 12px;
-      font-weight: 600;
-      pointer-events: none;
-      opacity: 0;
-      z-index: 100;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-      text-align: center;
-      max-width: calc(100vw - 32px);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Responsive Mobile Overrides (iPhone, Android, Tablets) */
-    @media (max-width: 768px) {
-      .top-hud {
-        top: calc(12px + var(--sat));
-        gap: 6px;
-      }
-      .territory-capsule {
-        padding: 5px 12px;
-        gap: 8px;
-      }
-      .team-stat {
-        font-size: 11px;
-        gap: 4px;
-      }
-      .ratio-track {
-        width: 80px;
-        height: 5px;
-      }
-      .chord-badge {
-        font-size: 10px;
-        padding: 3px 10px;
-      }
-
-      /* Floating Dock on Mobile */
-      .control-deck {
-        bottom: calc(14px + var(--sab));
-        width: calc(100vw - 20px);
-        max-width: 410px;
-        flex-direction: column-reverse;
-        align-items: stretch;
-        gap: 8px;
-      }
-      .dock-main {
-        width: 100%;
-        justify-content: space-between;
-        padding: 6px 10px;
-        border-radius: var(--radius-full);
-      }
-      .mode-btn {
-        padding: 5px 8px;
-        font-size: 10.5px;
-      }
-      .btn-label-desktop {
-        display: none;
-      }
-      .studio-toggle-btn {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 6px 10px;
-      }
-
-      /* Expandable Studio Drawer on Mobile */
-      .studio-drawer {
-        background: rgba(16, 22, 36, 0.94);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-lg);
-        padding: 0 14px;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.65);
-        max-height: 0;
-        opacity: 0;
-        transform: translateY(10px) scale(0.97);
-        pointer-events: none;
-        overflow: hidden;
-        transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .studio-drawer.open {
-        max-height: 220px;
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        pointer-events: auto;
-        padding: 12px 14px;
-      }
-
-      .desktop-only-divider {
-        display: none;
-      }
-
-      .studio-drawer .control-group {
-        width: 100%;
-        justify-content: space-between;
-      }
-
-      .studio-drawer .range-control input[type="range"] {
-        width: 90px;
-      }
-
-      .start-card {
-        padding: 28px 20px;
-        border-radius: 22px;
-      }
-      .start-title {
-        font-size: 22px;
-      }
-      .start-description {
-        font-size: 13px;
-        margin-bottom: 20px;
-      }
-      .primary-btn {
-        width: 100%;
-        justify-content: center;
-        padding: 12px 20px;
-      }
-    }
-  </style>
+  <!-- Modular Design System Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -687,97 +33,157 @@
         </div>
       </div>
       
-      <div class="chord-badge" id="chord-badge">
-        <span>HARMONY:</span>
-        <span class="chord-name" id="chord-name">Ebmaj9</span>
+      <div class="top-actions">
+        <div class="chord-badge" id="chord-badge">
+          <span>HARMONY:</span>
+          <span class="chord-name" id="chord-name">Ebmaj9</span>
+        </div>
+        <a href="https://github.com/YuJunWang/lofi-pong-wars" target="_blank" rel="noopener" class="github-badge" title="View Source on GitHub">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span class="github-label">GitHub</span>
+        </a>
       </div>
     </div>
 
     <!-- Canvas Simulation -->
     <canvas id="stage"></canvas>
 
-    <!-- Bottom Studio Control Deck (Responsive Dock + Drawer) -->
+    <!-- Bottom Studio Control Deck (Primary Dock + Popover) -->
     <div class="control-deck" id="control-deck">
-      <!-- 1. Permanent Primary Dock Bar -->
-      <div class="dock-main">
-        <!-- Team Count Selector -->
-        <div class="mode-switcher">
+      <!-- 1. Floating Studio Popover Console (Option 1) -->
+      <div class="studio-popover" id="studio-popover" aria-hidden="true">
+        <div class="popover-header">
+          <div class="popover-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+            <span>Studio Console</span>
+          </div>
+          <button class="popover-close-btn" id="btn-popover-close" title="Close Studio Panel">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="popover-body">
+          <!-- Column 1: Audio & Dynamics -->
+          <div class="popover-section">
+            <div class="section-label">Audio & Dynamics</div>
+            
+            <div class="popover-row">
+              <div class="row-header">
+                <span class="row-title">Speed</span>
+                <span class="value-badge" id="speed-value">1.0x</span>
+              </div>
+              <input type="range" id="speed-slider" min="0.5" max="2.5" step="0.1" value="1.0" class="studio-range">
+            </div>
+
+            <div class="popover-row">
+              <div class="row-header">
+                <span class="row-title">Volume</span>
+                <span class="value-badge" id="vol-value">70%</span>
+              </div>
+              <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.7" class="studio-range">
+            </div>
+
+            <div class="popover-row row-between">
+              <span class="row-title">Vinyl Crackle</span>
+              <button class="icon-btn active" id="btn-vinyl" title="Toggle Vinyl Warmth">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+                <span id="vinyl-status">Active</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Column 2: Focus & Shortcuts -->
+          <div class="popover-section">
+            <div class="section-label">Pomodoro Focus</div>
+            
+            <div class="pomo-card">
+              <div class="pomo-display" id="pomo-display">25:00</div>
+              <div class="pomo-buttons">
+                <button class="pomo-btn-primary" id="btn-pomo-toggle">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span id="pomo-btn-text">Start Focus</span>
+                </button>
+                <button class="icon-btn" id="btn-pomo-mode" title="Toggle 25m or 50m Session">25m</button>
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top: 14px;">Shortcuts</div>
+            <div class="shortcuts-grid">
+              <div class="shortcut-tag"><kbd>Space</kbd><span>Pause</span></div>
+              <div class="shortcut-tag"><kbd>2-6</kbd><span>Factions</span></div>
+              <div class="shortcut-tag"><kbd>S</kbd><span>Sound</span></div>
+              <div class="shortcut-tag"><kbd>P</kbd><span>Palette</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="popover-footer">
+          <a href="https://github.com/YuJunWang/lofi-pong-wars" target="_blank" rel="noopener" class="credit-link">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>YuJunWang/lofi-pong-wars</span>
+          </a>
+          <span class="footer-divider">·</span>
+          <a href="https://github.com/vnglst/pong-wars" target="_blank" rel="noopener" class="credit-link">
+            <span>Original by Koen van Gilst</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 2. Permanent Primary Dock Bar -->
+      <div class="dock-main" id="dock-main">
+        <!-- Team Count Selector (Fluid Glass Segmented Dial: 2P..6P) -->
+        <div class="mode-switcher" title="Faction Battle Count (Keys 2-6)">
           <button class="mode-btn active" data-teams="2">2P</button>
           <button class="mode-btn" data-teams="3">3P</button>
           <button class="mode-btn" data-teams="4">4P</button>
+          <button class="mode-btn" data-teams="5">5P</button>
+          <button class="mode-btn" data-teams="6">6P</button>
         </div>
 
         <div class="deck-divider"></div>
 
-        <!-- Play / Pause -->
+        <!-- Play / Pause Button -->
         <button class="icon-btn" id="btn-pause" title="Toggle Play / Pause (Space)">
-          <span id="pause-icon">⏸</span>
+          <span id="pause-icon" class="svg-icon-wrap">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+          </span>
           <span id="pause-text" class="btn-label-desktop">Pause</span>
         </button>
 
         <div class="deck-divider"></div>
 
         <!-- Sound Style Preset Selector -->
-        <div class="style-select-wrapper" title="Switch Soundscape Style & Voice Ensemble">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+        <div class="style-select-wrapper" title="Switch Soundscape Style (Press S)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 9v6M22 10v4M2 10v4"></path></svg>
           <select id="style-select" class="style-dropdown">
-            <option value="lofi">☕ Lo-Fi</option>
-            <option value="synthwave">🌌 Synth</option>
-            <option value="zen">🎋 Zen</option>
-            <option value="chiptune">👾 8-Bit</option>
+            <option value="lofi">Lo-Fi Study</option>
+            <option value="synthwave">Cyber Synth</option>
+            <option value="zen">Zen Garden</option>
+            <option value="chiptune">8-Bit Arcade</option>
           </select>
         </div>
 
-        <!-- Studio Drawer Toggle Button (Shown on mobile) -->
-        <button class="icon-btn studio-toggle-btn" id="btn-studio-toggle" title="Toggle Studio Settings">
-          <span>🎛️</span>
+        <div class="deck-divider"></div>
+
+        <!-- Color Palette Theme Selector -->
+        <div class="style-select-wrapper" title="Switch Color Palette (Press P)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0 0 20c1.5 0 2.5-1 2.5-2.5 0-.7-.3-1.4-.8-1.9-.5-.5-.7-1.2-.7-1.9 0-1.7 1.3-3 3-3h2c2.8 0 5-2.2 5-5 0-4.4-4.5-8-11-8z"></path></svg>
+          <select id="palette-select" class="style-dropdown">
+            <option value="sunset">Sunset Amber</option>
+            <option value="cyber">Cyber Neon</option>
+            <option value="matcha">Uji Matcha</option>
+            <option value="nordic">Nordic Frost</option>
+            <option value="mocha">Warm Mocha</option>
+          </select>
+        </div>
+
+        <div class="deck-divider"></div>
+
+        <!-- Studio Popover Toggle Button -->
+        <button class="icon-btn" id="btn-studio-toggle" title="Open Studio Controls & Focus Timer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          <span class="btn-label-desktop">Studio</span>
         </button>
-      </div>
-
-      <!-- 2. Expandable Studio & Focus Drawer -->
-      <div class="studio-drawer" id="studio-drawer">
-        <div class="deck-divider desktop-only-divider"></div>
-
-        <!-- Playback Speed -->
-        <div class="control-group">
-          <div class="range-control">
-            <span>Speed</span>
-            <input type="range" id="speed-slider" min="0.5" max="2.5" step="0.1" value="1.0">
-          </div>
-        </div>
-
-        <div class="deck-divider desktop-only-divider"></div>
-
-        <!-- Sound Volume & Vinyl -->
-        <div class="control-group">
-          <div class="range-control">
-            <span>Vol</span>
-            <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.7">
-          </div>
-          <button class="icon-btn active" id="btn-vinyl" title="Toggle Vinyl Warmth">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
-            <span>Vinyl</span>
-          </button>
-        </div>
-
-        <div class="deck-divider desktop-only-divider"></div>
-
-        <!-- Pomodoro Focus Timer -->
-        <div class="control-group">
-          <div class="pomo-capsule" id="pomo-display">25:00</div>
-          <button class="icon-btn" id="btn-pomo-toggle">Focus</button>
-          <button class="icon-btn" id="btn-pomo-mode">25m</button>
-        </div>
-
-        <div class="deck-divider desktop-only-divider"></div>
-
-        <!-- Attribution Link -->
-        <div class="control-group">
-          <a href="https://github.com/vnglst/pong-wars" target="_blank" rel="noopener" class="credit-link" title="Original Pong Wars by Koen van Gilst">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            <span>Pong Wars</span>
-          </a>
-        </div>
       </div>
     </div>
 
@@ -787,1099 +193,27 @@
         <div class="modal-tag">Interactive Soundscape</div>
         <h1 class="start-title">Lo-Fi Pong Wars</h1>
         <p class="start-description">
-          An autonomous generative ambient simulation. Watch competing color factions battle for territory while synthesizing warm chords in real-time.
+          An autonomous generative ambient simulation. Watch 2 to 6 color factions battle for territory while synthesizing warm chords in real-time.
         </p>
         <button class="primary-btn" id="start-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
           <span>Start Audio & Simulation</span>
         </button>
         <div class="attribution-note">
-          <span>Concept inspired by <a href="https://github.com/vnglst/pong-wars" target="_blank" rel="noopener">Pong Wars</a></span>
+          <a href="https://github.com/YuJunWang/lofi-pong-wars" target="_blank" rel="noopener">YuJunWang/lofi-pong-wars</a>
+          <span>· Inspired by <a href="https://github.com/vnglst/pong-wars" target="_blank" rel="noopener">Pong Wars</a></span>
         </div>
       </div>
     </div>
 
     <!-- Toast Notification -->
-    <div class="toast-pill" id="toast-msg">Focus session completed! Time for a warm break ☕</div>
+    <div class="toast-pill" id="toast-msg">Focus session completed! Time for a mindful rest.</div>
   </div>
 
-  <script>
-    /**
-     * Lo-Fi Pong Wars - Studio Edition
-     * Multi-Faction (2, 3, 4 Teams) + Procedural Web Audio Synth + GSAP Animations
-     */
-
-    // --- Team Color Palettes ---
-    const TEAM_PALETTES = [
-      { id: 0, name: 'Amber Sunset', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' },
-      { id: 1, name: 'Twilight Lavender', color: '#818cf8', glow: 'rgba(129, 140, 248, 0.5)' },
-      { id: 2, name: 'Emerald Sage', color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)' },
-      { id: 3, name: 'Coral Rose', color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.5)' }
-    ];
-
-    // --- 4 Curated Soundscape Styles with Distinct Voice Ensembles ---
-    const SOUND_STYLES = {
-      lofi: {
-        id: 'lofi',
-        name: '☕ Lo-Fi Study',
-        description: 'Warm Rhodes, Upright Bass, Music Box & Pluck',
-        vinylDefault: true,
-        chords: [
-          { name: "Ebmaj9", baseFreqs: [155.56, 196.00, 233.08, 293.66, 349.23, 392.00, 466.16, 587.33] },
-          { name: "Cm7",    baseFreqs: [130.81, 155.56, 196.00, 233.08, 261.63, 311.13, 392.00, 466.16] },
-          { name: "Fm9",    baseFreqs: [174.61, 207.65, 261.63, 311.13, 349.23, 415.30, 523.25, 622.25] },
-          { name: "Bb13",   baseFreqs: [116.54, 146.83, 174.61, 207.65, 233.08, 293.66, 349.23, 466.16] }
-        ],
-        voices: [
-          // Ball 0: Warm Rhodes (Tenor/Chords)
-          { name: 'Warm Rhodes', mult: 1.0, oscType: 'sine', detune: 1.0025, filterStart: 1500, filterEnd: 320, attack: 0.008, decay: 1.35, gain: 0.24 },
-          // Ball 1: Upright Bass (Deep Sub Bass)
-          { name: 'Upright Bass', mult: 0.5, oscType: 'triangle', detune: 1.0, filterStart: 550, filterEnd: 180, attack: 0.015, decay: 1.6, gain: 0.35 },
-          // Ball 2: Music Box (Treble Sparkle)
-          { name: 'Music Box', mult: 2.0, oscType: 'sine', detune: 1.001, filterStart: 3500, filterEnd: 1200, attack: 0.004, decay: 0.9, gain: 0.18 },
-          // Ball 3: Muted Pluck (Acoustic Pluck)
-          { name: 'Muted Pluck', mult: 1.0, oscType: 'triangle', detune: 1.005, filterStart: 2400, filterEnd: 220, attack: 0.003, decay: 0.65, gain: 0.22 }
-        ],
-        wallVoices: null // Pure pristine silence on wall bounces for meditation
-      },
-      synthwave: {
-        id: 'synthwave',
-        name: '🌌 Cyber Synth',
-        description: 'Analog Saw Lead, Reese Bass, FM Glass & Pluck',
-        vinylDefault: false,
-        chords: [
-          { name: "Dm9",    baseFreqs: [146.83, 174.61, 220.00, 261.63, 293.66, 349.23, 440.00, 523.25] },
-          { name: "Bbmaj7", baseFreqs: [116.54, 146.83, 174.61, 220.00, 233.08, 293.66, 349.23, 440.00] },
-          { name: "Gm7",    baseFreqs: [98.00,  123.47, 146.83, 174.61, 196.00, 246.94, 293.66, 349.23] },
-          { name: "A7b9",   baseFreqs: [110.00, 138.59, 164.81, 220.00, 233.08, 277.18, 329.63, 440.00] }
-        ],
-        voices: [
-          // Ball 0: 80s Analog Saw Lead
-          { name: 'Analog Lead', mult: 1.0, oscType: 'sawtooth', detune: 1.004, filterStart: 2800, filterEnd: 450, attack: 0.01, decay: 1.2, gain: 0.18 },
-          // Ball 1: Reese Sub Bass
-          { name: 'Reese Bass', mult: 0.5, oscType: 'sawtooth', detune: 1.008, filterStart: 650, filterEnd: 150, attack: 0.02, decay: 1.8, gain: 0.28 },
-          // Ball 2: FM Crystal Arp
-          { name: 'FM Glass Arp', mult: 2.0, oscType: 'sine', detune: 1.0, filterStart: 4500, filterEnd: 1800, attack: 0.005, decay: 1.1, gain: 0.16 },
-          // Ball 3: Neon Pluck
-          { name: 'Neon Pluck', mult: 1.0, oscType: 'square', detune: 1.003, filterStart: 3200, filterEnd: 280, attack: 0.004, decay: 0.5, gain: 0.14 }
-        ],
-        wallVoices: [
-          // Ball 0: Cyber Click (短促類比點擊)
-          { type: 'click', freq: 1100, decay: 0.03, gain: 0.09, filter: 2800 },
-          // Ball 1: 808 Sub Tap (808 低音小敲)
-          { type: 'sub', freq: 90, endFreq: 45, decay: 0.09, gain: 0.18, filter: 250 },
-          // Ball 2: Metallic Ping (金屬水晶高音)
-          { type: 'glass', freq: 3400, decay: 0.04, gain: 0.07, filter: 4500 },
-          // Ball 3: Neon Closed Hat (霓虹閉鈸)
-          { type: 'brush', freq: 4800, decay: 0.025, gain: 0.06, filter: 6000 }
-        ]
-      },
-      zen: {
-        id: 'zen',
-        name: '🎋 Zen Garden',
-        description: 'Plucked Koto, Bamboo Flute, Singing Bowl & Kalimba',
-        vinylDefault: false,
-        chords: [
-          { name: "D-Gong (宮)",  baseFreqs: [146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63, 392.00] },
-          { name: "G-Zhi (徵)",   baseFreqs: [196.00, 220.00, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25] },
-          { name: "A-Yu (羽)",    baseFreqs: [110.00, 130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66] },
-          { name: "C-Shang (商)", baseFreqs: [130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63] }
-        ],
-        voices: [
-          // Ball 0: Plucked Koto (古箏)
-          { name: 'Plucked Koto', mult: 1.0, oscType: 'triangle', detune: 1.003, filterStart: 2800, filterEnd: 300, attack: 0.006, decay: 1.4, gain: 0.25 },
-          // Ball 1: Bamboo Flute Drone (尺八/竹笛)
-          { name: 'Bamboo Drone', mult: 0.5, oscType: 'sine', detune: 1.001, filterStart: 800, filterEnd: 250, attack: 0.08, decay: 2.0, gain: 0.32 },
-          // Ball 2: Singing Bowl (頌缽/風鈴)
-          { name: 'Singing Bowl', mult: 2.0, oscType: 'sine', detune: 1.002, filterStart: 3200, filterEnd: 1500, attack: 0.02, decay: 2.2, gain: 0.16 },
-          // Ball 3: Wooden Kalimba (木質卡林巴)
-          { name: 'Kalimba', mult: 1.0, oscType: 'sine', detune: 1.001, filterStart: 1800, filterEnd: 200, attack: 0.003, decay: 0.7, gain: 0.28 }
-        ],
-        wallVoices: null // Pure pristine silence on wall bounces for Zen tranquility
-      },
-      chiptune: {
-        id: 'chiptune',
-        name: '👾 8-Bit Arcade',
-        description: 'NES Square Lead, Triangle Bass, Pulse Arp & Blip',
-        vinylDefault: false,
-        chords: [
-          { name: "C-Major",  baseFreqs: [130.81, 164.81, 196.00, 261.63, 329.63, 392.00, 523.25, 659.25] },
-          { name: "G-Major",  baseFreqs: [98.00,  123.47, 146.83, 196.00, 246.94, 293.66, 392.00, 493.88] },
-          { name: "A-Minor",  baseFreqs: [110.00, 130.81, 164.81, 220.00, 261.63, 329.63, 440.00, 523.25] },
-          { name: "F-Major",  baseFreqs: [87.31,  110.00, 130.81, 174.61, 220.00, 261.63, 349.23, 440.00] }
-        ],
-        voices: [
-          // Ball 0: NES Square Lead (50% Pulse)
-          { name: 'Square Lead', mult: 1.0, oscType: 'square', detune: 1.0, filterStart: 6000, filterEnd: 2500, attack: 0.002, decay: 0.6, gain: 0.12 },
-          // Ball 1: NES Triangle Bass
-          { name: 'Triangle Bass', mult: 0.5, oscType: 'triangle', detune: 1.0, filterStart: 3000, filterEnd: 800, attack: 0.005, decay: 0.9, gain: 0.35 },
-          // Ball 2: 25% Pulse High Arpeggio
-          { name: 'Pulse Arp', mult: 2.0, oscType: 'square', detune: 1.002, filterStart: 8000, filterEnd: 4000, attack: 0.002, decay: 0.45, gain: 0.09 },
-          // Ball 3: Retro Blip / Coin
-          { name: 'Retro Blip', mult: 1.0, oscType: 'square', detune: 1.01, filterStart: 5000, filterEnd: 1200, attack: 0.002, decay: 0.35, gain: 0.11 }
-        ],
-        wallVoices: [
-          // Ball 0: NES Soft Pop (像素微啵聲)
-          { type: 'click', freq: 520, decay: 0.02, gain: 0.08, filter: 3000 },
-          // Ball 1: NES Triangle Kick (像素三角小踩鼓)
-          { type: 'sub', freq: 110, endFreq: 40, decay: 0.06, gain: 0.20, filter: 600 },
-          // Ball 2: Pixel Coin Blip (金幣微嗶)
-          { type: 'glass', freq: 2200, decay: 0.025, gain: 0.06, filter: 4000 },
-          // Ball 3: NES Noise Snare (短促噪聲小軍鼓)
-          { type: 'brush', freq: 2400, decay: 0.03, gain: 0.07, filter: 3500 }
-        ]
-      }
-    };
-
-    let currentStyleId = 'lofi';
-    const GRID_SIZE = 32;
-    let teamCount = 2;
-    let activeChordIndex = 0;
-    let chordHitsCounter = 0;
-    const CHORD_CHANGE_HITS = 24;
-
-    // --- Web Audio Synthesizer Engine ---
-    class LoFiSynth {
-      constructor() {
-        this.ctx = null;
-        this.masterGain = null;
-        this.delaySend = null;
-        this.vinylGain = null;
-        this.isVinylEnabled = true;
-        this.volume = 0.7;
-        this.initialized = false;
-      }
-
-      init() {
-        if (this.initialized) {
-          if (this.ctx && this.ctx.state === "suspended") {
-            this.ctx.resume().catch(() => {});
-          }
-          return;
-        }
-        try {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          this.ctx = new AudioCtx();
-
-          // Master Output Gain
-          this.masterGain = this.ctx.createGain();
-          this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
-
-          // Ambient Stereo Space / Delay Node
-          const delay = this.ctx.createDelay();
-          delay.delayTime.setValueAtTime(0.28, this.ctx.currentTime);
-          
-          const feedback = this.ctx.createGain();
-          feedback.gain.setValueAtTime(0.32, this.ctx.currentTime);
-          
-          const delayFilter = this.ctx.createBiquadFilter();
-          delayFilter.type = "lowpass";
-          delayFilter.frequency.setValueAtTime(1100, this.ctx.currentTime);
-
-          delay.connect(feedback);
-          feedback.connect(delayFilter);
-          delayFilter.connect(delay);
-          delayFilter.connect(this.masterGain);
-
-          this.delaySend = this.ctx.createGain();
-          this.delaySend.gain.setValueAtTime(0.38, this.ctx.currentTime);
-          this.delaySend.connect(delay);
-
-          this.masterGain.connect(this.ctx.destination);
-
-          this.initVinyl();
-          this.initialized = true;
-
-          if (this.ctx.state === "suspended") {
-            this.ctx.resume().catch(() => {});
-          }
-        } catch (err) {
-          console.warn("AudioContext init error:", err);
-        }
-      }
-
-      initVinyl() {
-        if (!this.ctx) return;
-        const bufferSize = this.ctx.sampleRate * 4;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-
-        for (let i = 0; i < bufferSize; i++) {
-          const brown = (Math.random() * 2 - 1) * 0.012;
-          const crackle = Math.random() > 0.9995 ? (Math.random() * 2 - 1) * 0.22 : 0;
-          data[i] = brown + crackle;
-        }
-
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-
-        const noiseFilter = this.ctx.createBiquadFilter();
-        noiseFilter.type = "bandpass";
-        noiseFilter.frequency.setValueAtTime(750, this.ctx.currentTime);
-        noiseFilter.Q.setValueAtTime(0.9, this.ctx.currentTime);
-
-        this.vinylGain = this.ctx.createGain();
-        this.vinylGain.gain.setValueAtTime(this.isVinylEnabled ? 0.35 : 0, this.ctx.currentTime);
-
-        noise.connect(noiseFilter);
-        noiseFilter.connect(this.vinylGain);
-        this.vinylGain.connect(this.masterGain);
-        noise.start();
-      }
-
-      setVolume(val) {
-        this.volume = val;
-        if (this.masterGain && this.ctx) {
-          this.masterGain.gain.setTargetAtTime(val, this.ctx.currentTime, 0.05);
-        }
-      }
-
-      toggleVinyl() {
-        this.isVinylEnabled = !this.isVinylEnabled;
-        if (this.vinylGain && this.ctx) {
-          this.vinylGain.gain.setTargetAtTime(this.isVinylEnabled ? 0.35 : 0, this.ctx.currentTime, 0.1);
-        }
-        return this.isVinylEnabled;
-      }
-
-      playNote(freq, pan = 0, teamIndex = 0) {
-        if (!this.initialized || !this.ctx) return;
-        // Bug 4: If context is suspended, trigger resume for NEXT note but skip this one
-        if (this.ctx.state !== 'running') {
-          if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
-          return;
-        }
-        // Risk B: Throttle per-team note rate to prevent AudioNode overload
-        const now_ms = performance.now();
-        if (now_ms - lastNoteTimes[teamIndex % 4] < NOTE_THROTTLE_MS) return;
-        lastNoteTimes[teamIndex % 4] = now_ms;
-
-        const now = this.ctx.currentTime;
-
-        const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
-        const voice = currentStyle.voices[teamIndex % currentStyle.voices.length];
-        const actualFreq = freq * (voice.mult || 1.0);
-
-        // 1. Dual Oscillators with Voice Detune
-        const osc1 = this.ctx.createOscillator();
-        const osc2 = this.ctx.createOscillator();
-
-        osc1.type = voice.oscType || 'sine';
-        osc2.type = voice.oscType === 'sawtooth' ? 'sawtooth' : 'sine';
-
-        osc1.frequency.setValueAtTime(actualFreq, now);
-        osc2.frequency.setValueAtTime(actualFreq * (voice.detune || 1.0025), now);
-
-        // 2. Dynamic Filter Envelope
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(voice.filterStart || 1500, now);
-        filter.frequency.exponentialRampToValueAtTime(Math.max(60, voice.filterEnd || 320), now + (voice.decay || 1.2));
-
-        // 3. Amplitude Envelope (ADSR)
-        const gainNode = this.ctx.createGain();
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(voice.gain || 0.24, now + (voice.attack || 0.008));
-        gainNode.gain.exponentialRampToValueAtTime(0.001, now + (voice.decay || 1.35));
-
-        // 4. Stereo Panning
-        const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
-        if (panner) panner.pan.setValueAtTime(pan, now);
-
-        // Routing
-        osc1.connect(filter);
-        osc2.connect(filter);
-        filter.connect(gainNode);
-
-        if (panner) {
-          gainNode.connect(panner);
-          panner.connect(this.masterGain);
-          panner.connect(this.delaySend);
-        } else {
-          gainNode.connect(this.masterGain);
-          gainNode.connect(this.delaySend);
-        }
-
-        osc1.start(now);
-        osc2.start(now);
-        const stopTime = now + (voice.decay || 1.35) + 0.1;
-        osc1.stop(stopTime);
-        osc2.stop(stopTime);
-      }
-
-      playWallHit(pan = 0, teamIndex = 0) {
-        if (!this.initialized || !this.ctx || this.ctx.state !== 'running') return;
-
-        const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
-        // Silent wall bounce if style disabled wall percussion (e.g. Lo-Fi, Zen)
-        if (!currentStyle.wallVoices || currentStyle.wallVoices.length === 0) return;
-
-        // Anti-machine gun throttle for wall hits (60ms per team)
-        const now_ms = performance.now();
-        if (now_ms - lastWallHitTimes[teamIndex % 4] < WALL_THROTTLE_MS) return;
-        lastWallHitTimes[teamIndex % 4] = now_ms;
-
-        const now = this.ctx.currentTime;
-        const wallVoice = currentStyle.wallVoices[teamIndex % currentStyle.wallVoices.length];
-        if (!wallVoice) return;
-
-        const gainNode = this.ctx.createGain();
-        const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
-        if (panner) panner.pan.setValueAtTime(pan, now);
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = (wallVoice.type === 'brush') ? 'bandpass' : 'lowpass';
-        filter.frequency.setValueAtTime(wallVoice.filter || 1500, now);
-
-        // Amplitude Envelope (Short Percussive Decay)
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(wallVoice.gain || 0.08, now + 0.002);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + (wallVoice.decay || 0.05));
-
-        if (wallVoice.type === 'brush') {
-          // Micro-noise burst (hi-hat / brushed snare / shaker)
-          const bufferSize = Math.max(256, Math.floor(this.ctx.sampleRate * (wallVoice.decay || 0.04)));
-          const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-          const output = noiseBuffer.getChannelData(0);
-          for (let i = 0; i < bufferSize; i++) {
-            output[i] = Math.random() * 2 - 1;
-          }
-          const whiteNoise = this.ctx.createBufferSource();
-          whiteNoise.buffer = noiseBuffer;
-          whiteNoise.connect(filter);
-          filter.connect(gainNode);
-          if (panner) {
-            gainNode.connect(panner);
-            panner.connect(this.masterGain);
-          } else {
-            gainNode.connect(this.masterGain);
-          }
-          whiteNoise.start(now);
-          whiteNoise.stop(now + (wallVoice.decay || 0.04) + 0.02);
-        } else {
-          // Tone / Sub / Click / Water drop oscillator
-          const osc = this.ctx.createOscillator();
-          osc.type = (wallVoice.type === 'sub' || wallVoice.type === 'water') ? 'sine' 
-                   : (wallVoice.type === 'wood') ? 'triangle' 
-                   : (wallVoice.type === 'click' && currentStyleId === 'chiptune') ? 'square' 
-                   : 'sine';
-
-          osc.frequency.setValueAtTime(wallVoice.freq || 440, now);
-          if (wallVoice.endFreq) {
-            osc.frequency.exponentialRampToValueAtTime(wallVoice.endFreq, now + (wallVoice.decay || 0.05));
-          }
-
-          osc.connect(filter);
-          filter.connect(gainNode);
-          if (panner) {
-            gainNode.connect(panner);
-            panner.connect(this.masterGain);
-          } else {
-            gainNode.connect(this.masterGain);
-          }
-
-          osc.start(now);
-          osc.stop(now + (wallVoice.decay || 0.05) + 0.02);
-        }
-      }
-
-      playChime() {
-        if (!this.initialized) return;
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach((f, i) => {
-          setTimeout(() => this.playNote(f, 0, 0), i * 160);
-        });
-      }
-    }
-
-    const synth = new LoFiSynth();
-
-    // --- Per-ball audio throttle timestamps (Risk B) ---
-    const lastNoteTimes = [0, 0, 0, 0];
-    const NOTE_THROTTLE_MS = 40;
-
-    const lastWallHitTimes = [0, 0, 0, 0];
-    const WALL_THROTTLE_MS = 60;
-
-    // --- Canvas & Simulation State ---
-    const canvas = document.getElementById('stage');
-    const ctx = canvas.getContext('2d');
-
-    let width = 640;
-    let height = 640;
-    let tileSize = width / GRID_SIZE;
-    let grid = [];
-    let balls = [];
-    let particles = [];
-    let shockwaves = [];
-    let isPaused = false;
-    let speedMultiplier = 1.0;
-
-    function resizeCanvas() {
-      const isMobile = window.innerWidth <= 768;
-      // Get exact CSS safe area insets
-      const sat = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat')) || 0;
-      const sab = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab')) || 0;
-      
-      // Space budget: Top HUD + Bottom Dock + margins
-      const topBudget = isMobile ? (72 + sat) : 96;
-      const bottomBudget = isMobile ? (82 + sab) : 108;
-      const verticalAvailable = window.innerHeight - topBudget - bottomBudget;
-      const horizontalAvailable = window.innerWidth - (isMobile ? 24 : 48);
-
-      const minDim = Math.min(horizontalAvailable, verticalAvailable);
-      const size = Math.floor(Math.max(260, Math.min(minDim, 680)));
-      width = size;
-      height = size;
-      tileSize = width / GRID_SIZE;
-
-      canvas.width = width;
-      canvas.height = height;
-      canvas.style.width = width + 'px';
-      canvas.style.height = height + 'px';
-    }
-
-    // Set up Grid Territory according to Team Count (2, 3, or 4)
-    function setupGridAndBalls() {
-      grid = [];
-      balls = [];
-
-      for (let r = 0; r < GRID_SIZE; r++) {
-        grid[r] = [];
-        for (let c = 0; c < GRID_SIZE; c++) {
-          if (teamCount === 2) {
-            grid[r][c] = c < GRID_SIZE / 2 ? 0 : 1;
-          } else if (teamCount === 3) {
-            if (c < Math.floor(GRID_SIZE / 3)) grid[r][c] = 0;
-            else if (c < Math.floor(GRID_SIZE * 2 / 3)) grid[r][c] = 1;
-            else grid[r][c] = 2;
-          } else if (teamCount === 4) {
-            const isTop = r < GRID_SIZE / 2;
-            const isLeft = c < GRID_SIZE / 2;
-            if (isTop && isLeft) grid[r][c] = 0;       // Top-Left
-            else if (isTop && !isLeft) grid[r][c] = 1;  // Top-Right
-            else if (!isTop && isLeft) grid[r][c] = 2;  // Bottom-Left
-            else grid[r][c] = 3;                       // Bottom-Right
-          }
-        }
-      }
-
-      // Initialize Balls in Opposite Enemy Territory
-      if (teamCount === 2) {
-        balls.push({
-          x: (GRID_SIZE * 0.75) * tileSize,
-          y: (GRID_SIZE * 0.5) * tileSize,
-          dx: -3.2, dy: 3.2, radius: 7.5, team: 0,
-          palette: TEAM_PALETTES[0]
-        });
-        balls.push({
-          x: (GRID_SIZE * 0.25) * tileSize,
-          y: (GRID_SIZE * 0.5) * tileSize,
-          dx: 3.2, dy: -3.2, radius: 7.5, team: 1,
-          palette: TEAM_PALETTES[1]
-        });
-      } else if (teamCount === 3) {
-        balls.push({
-          x: (GRID_SIZE * 0.5) * tileSize, y: (GRID_SIZE * 0.25) * tileSize,
-          dx: -3.0, dy: 3.0, radius: 7.5, team: 0, palette: TEAM_PALETTES[0]
-        });
-        balls.push({
-          x: (GRID_SIZE * 0.85) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
-          dx: -3.2, dy: -2.8, radius: 7.5, team: 1, palette: TEAM_PALETTES[1]
-        });
-        balls.push({
-          x: (GRID_SIZE * 0.15) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
-          dx: 3.2, dy: -3.0, radius: 7.5, team: 2, palette: TEAM_PALETTES[2]
-        });
-      } else if (teamCount === 4) {
-        balls.push({
-          x: (GRID_SIZE * 0.75) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
-          dx: -3.0, dy: -3.0, radius: 7, team: 0, palette: TEAM_PALETTES[0]
-        });
-        balls.push({
-          x: (GRID_SIZE * 0.25) * tileSize, y: (GRID_SIZE * 0.75) * tileSize,
-          dx: 3.0, dy: -3.0, radius: 7, team: 1, palette: TEAM_PALETTES[1]
-        });
-        balls.push({
-          x: (GRID_SIZE * 0.75) * tileSize, y: (GRID_SIZE * 0.25) * tileSize,
-          dx: -3.0, dy: 3.0, radius: 7, team: 2, palette: TEAM_PALETTES[2]
-        });
-        balls.push({
-          x: (GRID_SIZE * 0.25) * tileSize, y: (GRID_SIZE * 0.25) * tileSize,
-          dx: 3.0, dy: 3.0, radius: 7, team: 3, palette: TEAM_PALETTES[3]
-        });
-      }
-
-      updateHUDStructure();
-      updateTerritoryScore();
-    }
-
-    // Immediate Initialization of Board & Geometry
-    resizeCanvas();
-    setupGridAndBalls();
-
-    // Dynamic HUD DOM reconstruction
-    function updateHUDStructure() {
-      const statsContainer = document.getElementById('team-stats-container');
-      const ratioTrack = document.getElementById('ratio-track');
-      statsContainer.innerHTML = '';
-      ratioTrack.innerHTML = '';
-
-      for (let t = 0; t < teamCount; t++) {
-        const stat = document.createElement('div');
-        stat.className = 'team-stat';
-        stat.innerHTML = `<div class="stat-dot dot-${t}"></div><span id="score-${t}">0%</span>`;
-        statsContainer.appendChild(stat);
-
-        const seg = document.createElement('div');
-        seg.className = `ratio-segment seg-${t}`;
-        seg.id = `seg-${t}`;
-        seg.style.width = `${100 / teamCount}%`;
-        ratioTrack.appendChild(seg);
-      }
-    }
-
-    function addFlipParticles(x, y, color) {
-      for (let i = 0; i < 5; i++) {
-        particles.push({
-          x: x + tileSize / 2,
-          y: y + tileSize / 2,
-          vx: (Math.random() - 0.5) * 2.8,
-          vy: (Math.random() - 0.5) * 2.8,
-          size: Math.random() * 2 + 1.5,
-          color: color,
-          alpha: 1.0,
-          life: 0.93
-        });
-      }
-    }
-
-    function addShockwave(x, y, color) {
-      shockwaves.push({
-        x: x, y: y, radius: 2, maxRadius: 55, color: color, alpha: 0.8
-      });
-    }
-
-    function updateTerritoryScore() {
-      if (!grid || grid.length === 0) return;
-      const counts = new Array(teamCount).fill(0);
-      const total = GRID_SIZE * GRID_SIZE;
-
-      for (let r = 0; r < GRID_SIZE; r++) {
-        if (!grid[r]) continue;
-        for (let c = 0; c < GRID_SIZE; c++) {
-          const t = grid[r][c];
-          if (t < teamCount) counts[t]++;
-        }
-      }
-
-      for (let t = 0; t < teamCount; t++) {
-        const pct = Math.round((counts[t] / total) * 100);
-        const scoreEl = document.getElementById(`score-${t}`);
-        const segEl = document.getElementById(`seg-${t}`);
-        if (scoreEl) scoreEl.innerText = `${pct}%`;
-        if (segEl) segEl.style.width = `${pct}%`;
-      }
-    }
-
-    function getNoteForCoord(row) {
-      const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
-      const currentChord = currentStyle.chords[activeChordIndex % currentStyle.chords.length];
-      const freqs = currentChord.baseFreqs;
-      const noteIdx = Math.floor((row / GRID_SIZE) * freqs.length) % freqs.length;
-      return freqs[freqs.length - 1 - noteIdx];
-    }
-
-    function updatePhysics() {
-      if (isPaused || !grid || grid.length === 0 || !balls || balls.length === 0) return;
-
-      // Risk A: Max speed constant to prevent tunneling
-      const MAX_SPEED = 6.0;
-
-      for (let b = 0; b < balls.length; b++) {
-        const ball = balls[b];
-        ball.x += ball.dx * speedMultiplier;
-        ball.y += ball.dy * speedMultiplier;
-
-        // Boundary Bounces
-        let hitWall = false;
-        let wallPan = (ball.x / width) * 1.6 - 0.8;
-
-        if (ball.x - ball.radius < 0) {
-          ball.x = ball.radius;
-          ball.dx = Math.abs(ball.dx);
-          hitWall = true;
-          wallPan = -0.85;
-        } else if (ball.x + ball.radius > width) {
-          ball.x = width - ball.radius;
-          ball.dx = -Math.abs(ball.dx);
-          hitWall = true;
-          wallPan = 0.85;
-        }
-
-        if (ball.y - ball.radius < 0) {
-          ball.y = ball.radius;
-          ball.dy = Math.abs(ball.dy);
-          hitWall = true;
-        } else if (ball.y + ball.radius > height) {
-          ball.y = height - ball.radius;
-          ball.dy = -Math.abs(ball.dy);
-          hitWall = true;
-        }
-
-        if (hitWall) {
-          synth.playWallHit(wallPan, ball.team);
-        }
-
-        // Risk A: Clamp speed after every step
-        const speed = Math.hypot(ball.dx, ball.dy);
-        if (speed > MAX_SPEED) {
-          ball.dx = (ball.dx / speed) * MAX_SPEED;
-          ball.dy = (ball.dy / speed) * MAX_SPEED;
-        }
-
-        // Multi-point Collision Sampling
-        const testPoints = [
-          { x: ball.x + Math.sign(ball.dx) * ball.radius, y: ball.y, axis: 'x' },
-          { x: ball.x, y: ball.y + Math.sign(ball.dy) * ball.radius, axis: 'y' }
-        ];
-
-        for (const pt of testPoints) {
-          const col = Math.floor(pt.x / tileSize);
-          const row = Math.floor(pt.y / tileSize);
-
-          if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
-            if (grid[row] && grid[row][col] !== ball.team) {
-              grid[row][col] = ball.team;
-
-              if (pt.axis === 'x') ball.dx = -ball.dx;
-              if (pt.axis === 'y') ball.dy = -ball.dy;
-
-              const freq = getNoteForCoord(row);
-              const pan = (col / GRID_SIZE) * 1.6 - 0.8;
-              synth.playNote(freq, pan, ball.team);
-
-              addFlipParticles(col * tileSize, row * tileSize, ball.palette.color);
-              addShockwave(pt.x, pt.y, ball.palette.color);
-
-              chordHitsCounter++;
-              if (chordHitsCounter >= CHORD_CHANGE_HITS) {
-                chordHitsCounter = 0;
-                const currentStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
-                activeChordIndex = (activeChordIndex + 1) % currentStyle.chords.length;
-                
-                const chordNameEl = document.getElementById('chord-name');
-                if (chordNameEl) {
-                  chordNameEl.innerText = currentStyle.chords[activeChordIndex].name;
-                  gsap.fromTo(chordNameEl, { scale: 1.4, color: '#f59e0b' }, { scale: 1.0, color: '#38bdf8', duration: 0.5, ease: "power2.out" });
-                }
-              }
-
-              updateTerritoryScore();
-              break;
-            }
-          }
-        }
-      }
-
-      // Bug 6: Particle & Shockwave physics moved here from render()
-      // so they update even when the tab is hidden
-      for (let i = shockwaves.length - 1; i >= 0; i--) {
-        const sw = shockwaves[i];
-        sw.radius += 2.0;
-        sw.alpha *= 0.93;
-        if (sw.radius > sw.maxRadius || sw.alpha < 0.05) shockwaves.splice(i, 1);
-      }
-
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha *= p.life;
-        if (p.alpha < 0.05) particles.splice(i, 1);
-      }
-    }
-
-    function render() {
-      if (!grid || grid.length === 0 || !balls || balls.length === 0) return;
-
-      // 1. Fill base with crisp pure white for dividing grid lines
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, width, height);
-
-      // 2. Grid Tiles (sharp squares separated by crisp white lines)
-      const lineThickness = 1.2;
-      for (let r = 0; r < GRID_SIZE; r++) {
-        if (!grid[r]) continue;
-        for (let c = 0; c < GRID_SIZE; c++) {
-          const t = grid[r][c];
-          if (t !== undefined && TEAM_PALETTES[t % TEAM_PALETTES.length]) {
-            ctx.fillStyle = TEAM_PALETTES[t % TEAM_PALETTES.length].color;
-            ctx.fillRect(
-              c * tileSize + lineThickness / 2,
-              r * tileSize + lineThickness / 2,
-              tileSize - lineThickness,
-              tileSize - lineThickness
-            );
-          }
-        }
-      }
-
-      // 3. Shockwaves (draw only — physics in updatePhysics)
-      for (let i = shockwaves.length - 1; i >= 0; i--) {
-        const sw = shockwaves[i];
-        ctx.beginPath();
-        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = sw.color;
-        ctx.globalAlpha = sw.alpha;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.globalAlpha = 1.0;
-      }
-
-      // 4. Particles (draw only — physics in updatePhysics)
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-      }
-
-      // 5. Glowing Balls
-      for (const ball of balls) {
-        if (!ball || !ball.palette) continue;
-        ctx.save();
-        ctx.shadowColor = ball.palette.glow;
-        ctx.shadowBlur = 18;
-        ctx.fillStyle = ball.palette.color;
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(ball.x - ball.radius * 0.28, ball.y - ball.radius * 0.28, ball.radius * 0.35, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-
-    // --- Decoupled Engine Architecture (Background Tab Audio & Physics Support) ---
-    // 1. Inline Web Worker for continuous physics & audio synthesis in background tabs
-    let tickerWorker = null;
-    let workerActive = false;
-    try {
-      const workerBlob = new Blob([`
-        let timer = null;
-        self.onmessage = function(e) {
-          if (e.data === 'start') {
-            if (!timer) {
-              timer = setInterval(function() {
-                self.postMessage('tick');
-              }, 1000 / 60);
-            }
-          } else if (e.data === 'stop') {
-            if (timer) {
-              clearInterval(timer);
-              timer = null;
-            }
-          }
-        };
-      `], { type: 'application/javascript' });
-      tickerWorker = new Worker(URL.createObjectURL(workerBlob));
-      tickerWorker.onmessage = function() {
-        workerActive = true;
-        if (!isPaused) {
-          updatePhysics();
-        }
-      };
-      tickerWorker.postMessage('start');
-    } catch (err) {
-      console.warn('Web Worker fallback to rAF loop:', err);
-    }
-
-    // 2. Render Loop (Canvas drawing runs via rAF; throttles gracefully when hidden to conserve GPU)
-    function renderLoop() {
-      if (document.visibilityState === 'visible') {
-        render();
-      }
-      // If Web Worker is unavailable, fallback to running physics inside rAF
-      if (!workerActive && !isPaused) {
-        updatePhysics();
-      }
-      requestAnimationFrame(renderLoop);
-    }
-    requestAnimationFrame(renderLoop);
-
-    // --- Interactive Waves & Touch-drag Support ---
-    let isPointerInteracting = false;
-    let lastRippleTime = 0;
-
-    function triggerInteraction(clientX, clientY) {
-      const rect = canvas.getBoundingClientRect();
-      const clickX = clientX - rect.left;
-      const clickY = clientY - rect.top;
-
-      if (clickX < 0 || clickX > width || clickY < 0 || clickY > height) return;
-
-      addShockwave(clickX, clickY, '#38bdf8');
-      if (synth.initialized) {
-        const pan = (clickX / width) * 1.6 - 0.8;
-        synth.playNote(880, pan, 0);
-      }
-
-      balls.forEach(b => {
-        const dx = b.x - clickX;
-        const dy = b.y - clickY;
-        const dist = Math.hypot(dx, dy);
-        if (dist < 130 && dist > 1) {
-          b.dx += (dx / dist) * 2.2;
-          b.dy += (dy / dist) * 2.2;
-        }
-      });
-    }
-
-    canvas.addEventListener('pointerdown', (e) => {
-      isPointerInteracting = true;
-      triggerInteraction(e.clientX, e.clientY);
-    });
-
-    window.addEventListener('pointermove', (e) => {
-      if (!isPointerInteracting) return;
-      const now = performance.now();
-      if (now - lastRippleTime > 75) {
-        lastRippleTime = now;
-        triggerInteraction(e.clientX, e.clientY);
-      }
-    });
-
-    window.addEventListener('pointerup', () => { isPointerInteracting = false; });
-    window.addEventListener('pointercancel', () => { isPointerInteracting = false; });
-
-    // --- Pomodoro Focus Timer (Timestamp-Accurate Across Tab Switching) ---
-    let pomoDurationMinutes = 25;
-    let pomoEndTime = null;
-    let pomoRemainingSeconds = 25 * 60;
-    let pomoTimer = null;
-    let isPomoRunning = false;
-
-    const pomoDisplay = document.getElementById('pomo-display');
-    const pomoToggleBtn = document.getElementById('btn-pomo-toggle');
-    const pomoModeBtn = document.getElementById('btn-pomo-mode');
-    const toast = document.getElementById('toast-msg');
-
-    function updatePomoDisplay(seconds) {
-      const m = Math.floor(seconds / 60);
-      const s = seconds % 60;
-      pomoDisplay.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    }
-
-    function triggerToast(msg) {
-      toast.innerText = msg;
-      gsap.fromTo(toast, 
-        { autoAlpha: 0, y: -20, scale: 0.9 }, 
-        { autoAlpha: 1, y: 0, scale: 1.0, duration: 0.4, ease: "back.out(1.7)" }
-      );
-      setTimeout(() => {
-        gsap.to(toast, { autoAlpha: 0, y: -15, duration: 0.3, ease: "power2.in" });
-      }, 3500);
-    }
-
-    function tickPomo() {
-      if (!isPomoRunning) return;
-      const now = Date.now();
-      const remainingMs = Math.max(0, pomoEndTime - now);
-      pomoRemainingSeconds = Math.ceil(remainingMs / 1000);
-      updatePomoDisplay(pomoRemainingSeconds);
-
-      if (pomoRemainingSeconds <= 0) {
-        clearInterval(pomoTimer);
-        isPomoRunning = false;
-        pomoToggleBtn.innerText = "Start Focus";
-        pomoToggleBtn.classList.remove('active');
-        synth.playChime();
-        triggerToast("🎉 Focus session complete! Time to stretch & hydrate ☕");
-      }
-    }
-
-    pomoToggleBtn.addEventListener('click', () => {
-      if (isPomoRunning) {
-        clearInterval(pomoTimer);
-        isPomoRunning = false;
-        pomoToggleBtn.innerText = "Start Focus";
-        pomoToggleBtn.classList.remove('active');
-      } else {
-        isPomoRunning = true;
-        pomoToggleBtn.innerText = "Pause";
-        pomoToggleBtn.classList.add('active');
-        pomoEndTime = Date.now() + pomoRemainingSeconds * 1000;
-        pomoTimer = setInterval(tickPomo, 400);
-      }
-    });
-
-    pomoModeBtn.addEventListener('click', () => {
-      if (isPomoRunning) return;
-      if (pomoDurationMinutes === 25) {
-        pomoDurationMinutes = 50;
-        pomoModeBtn.innerText = "50m";
-      } else if (pomoDurationMinutes === 50) {
-        pomoDurationMinutes = 5;
-        pomoModeBtn.innerText = "5m";
-      } else {
-        pomoDurationMinutes = 25;
-        pomoModeBtn.innerText = "25m";
-      }
-      pomoRemainingSeconds = pomoDurationMinutes * 60;
-      updatePomoDisplay(pomoRemainingSeconds);
-    });
-
-    // --- UI & Mode Switching ---
-    const startModal = document.getElementById('start-modal');
-    const startCard = document.getElementById('start-card');
-    const startBtn = document.getElementById('start-btn');
-    const btnPause = document.getElementById('btn-pause');
-    const pauseIcon = document.getElementById('pause-icon');
-    const pauseText = document.getElementById('pause-text');
-    const speedSlider = document.getElementById('speed-slider');
-    const volSlider = document.getElementById('vol-slider');
-    const btnVinyl = document.getElementById('btn-vinyl');
-
-    // Entrance Animation via GSAP
-    gsap.from(startCard, {
-      scale: 0.85,
-      autoAlpha: 0,
-      y: 30,
-      duration: 0.7,
-      ease: "back.out(1.4)"
-    });
-
-    function startExperience() {
-      synth.init();
-      if (synth.ctx && synth.ctx.state === "suspended") {
-        synth.ctx.resume().catch(() => {});
-      }
-      
-      if (startModal) {
-        gsap.to(startModal, {
-          autoAlpha: 0,
-          duration: 0.4,
-          ease: "power2.inOut",
-          onComplete: () => {
-            startModal.classList.add('hidden');
-            startModal.style.display = 'none';
-          }
-        });
-      }
-    }
-
-    startBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      startExperience();
-    });
-    startModal.addEventListener('click', startExperience);
-
-    // Mode Selector (2 / 3 / 4 Balls)
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        teamCount = parseInt(btn.getAttribute('data-teams'), 10);
-        setupGridAndBalls();
-        triggerToast(`Switched to ${teamCount}-Ball Battle Mode!`);
-      });
-    });
-
-    btnPause.addEventListener('click', () => {
-      isPaused = !isPaused;
-      pauseIcon.innerText = isPaused ? "▶" : "⏸";
-      pauseText.innerText = isPaused ? "Resume" : "Pause";
-      btnPause.classList.toggle('active', isPaused);
-    });
-
-    speedSlider.addEventListener('input', (e) => {
-      speedMultiplier = parseFloat(e.target.value);
-    });
-
-    volSlider.addEventListener('input', (e) => {
-      synth.setVolume(parseFloat(e.target.value));
-    });
-
-    btnVinyl.addEventListener('click', () => {
-      const enabled = synth.toggleVinyl();
-      btnVinyl.classList.toggle('active', enabled);
-      triggerToast(enabled ? "Vinyl Crackle On ☕" : "Vinyl Crackle Muted");
-    });
-
-    const styleSelect = document.getElementById('style-select');
-    styleSelect.addEventListener('change', (e) => {
-      currentStyleId = e.target.value;
-      activeChordIndex = 0;
-      chordHitsCounter = 0;
-      const selectedStyle = SOUND_STYLES[currentStyleId] || SOUND_STYLES.lofi;
-
-      // Update HUD chord display
-      const chordNameEl = document.getElementById('chord-name');
-      chordNameEl.innerText = selectedStyle.chords[0].name;
-      gsap.fromTo(chordNameEl, { scale: 1.4, color: '#f59e0b' }, { scale: 1.0, color: '#38bdf8', duration: 0.5, ease: "power2.out" });
-
-      // Risk C: Directly toggle vinyl without triggering btnVinyl's Toast
-      if (selectedStyle.vinylDefault && !synth.isVinylEnabled) {
-        synth.toggleVinyl();
-        btnVinyl.classList.add('active');
-      } else if (!selectedStyle.vinylDefault && synth.isVinylEnabled) {
-        synth.toggleVinyl();
-        btnVinyl.classList.remove('active');
-      }
-
-      // Show toast with voice details
-      triggerToast(`🎶 Style: ${selectedStyle.name} (${selectedStyle.description})`);
-    });
-
-    // Studio Drawer Toggle (Mobile Floating Dock)
-    const btnStudioToggle = document.getElementById('btn-studio-toggle');
-    const studioDrawer = document.getElementById('studio-drawer');
-    if (btnStudioToggle && studioDrawer) {
-      btnStudioToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = studioDrawer.classList.toggle('open');
-        btnStudioToggle.classList.toggle('active', isOpen);
-      });
-
-      // Auto close drawer when tapping canvas
-      canvas.addEventListener('pointerdown', () => {
-        if (studioDrawer.classList.contains('open')) {
-          studioDrawer.classList.remove('open');
-          btnStudioToggle.classList.remove('active');
-        }
-      });
-    }
-
-    // Keyboard Shortcuts
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        btnPause.click();
-      } else if (e.key === '2' || e.key === '3' || e.key === '4') {
-        const btn = document.querySelector(`.mode-btn[data-teams="${e.key}"]`);
-        if (btn) btn.click();
-      } else if (e.key === 's' || e.key === 'S') {
-        const styleKeys = Object.keys(SOUND_STYLES);
-        const nextIdx = (styleKeys.indexOf(currentStyleId) + 1) % styleKeys.length;
-        styleSelect.value = styleKeys[nextIdx];
-        styleSelect.dispatchEvent(new Event('change'));
-      }
-    });
-
-    window.addEventListener('resize', () => {
-      resizeCanvas();
-      setupGridAndBalls();
-    });
-
-    // (Board initialized at L1019-1021, above the HUD functions)
-  </script>
+  <!-- Classical Zero-Build JavaScript Modules (100% file:// compatible) -->
+  <script src="js/config.js"></script>
+  <script src="js/synth.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/ui.js"></script>
 </body>
 </html>
