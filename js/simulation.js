@@ -459,6 +459,88 @@ function render() {
     }
   }
 
+  // 2.5 Luminous Inward White Halo along Territory Frontiers
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.40)';
+  ctx.lineWidth = 1.8;
+  ctx.shadowColor = 'rgba(255, 255, 255, 0.85)';
+  ctx.shadowBlur = 4;
+  ctx.beginPath();
+
+  for (let r = 0; r < GRID_SIZE; r++) {
+    if (!grid[r]) continue;
+    const y0 = Math.floor(r * tileSize);
+    const y1 = Math.floor((r + 1) * tileSize);
+
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const t = grid[r][c];
+      if (t === undefined) continue;
+
+      const x0 = Math.floor(c * tileSize);
+      const x1 = Math.floor((c + 1) * tileSize);
+
+      const upSame = isSameTeam(r - 1, c, t);
+      const downSame = isSameTeam(r + 1, c, t);
+      const leftSame = isSameTeam(r, c - 1, t);
+      const rightSame = isSameTeam(r, c + 1, t);
+
+      // Interior tiles need no frontier stroke
+      if (upSame && downSame && leftSame && rightSame) continue;
+
+      const rTL = (!upSame && !leftSame) ? R : 0;
+      const rTR = (!upSame && !rightSame) ? R : 0;
+      const rBR = (!downSame && !rightSame) ? R : 0;
+      const rBL = (!downSame && !leftSame) ? R : 0;
+
+      // Frontier straight edges
+      if (!upSame) {
+        ctx.moveTo(x0 + rTL, y0);
+        ctx.lineTo(x1 - rTR, y0);
+      }
+      if (!rightSame) {
+        ctx.moveTo(x1, y0 + rTR);
+        ctx.lineTo(x1, y1 - rBR);
+      }
+      if (!downSame) {
+        ctx.moveTo(x1 - rBR, y1);
+        ctx.lineTo(x0 + rBL, y1);
+      }
+      if (!leftSame) {
+        ctx.moveTo(x0, y1 - rBL);
+        ctx.lineTo(x0, y0 + rTL);
+      }
+
+      // Convex corner arcs
+      if (!upSame && !leftSame && rTL > 0) {
+        ctx.moveTo(x0, y0 + rTL);
+        ctx.arc(x0 + rTL, y0 + rTL, rTL, Math.PI, Math.PI * 1.5);
+      }
+      if (!upSame && !rightSame && rTR > 0) {
+        ctx.moveTo(x1 - rTR, y0);
+        ctx.arc(x1 - rTR, y0 + rTR, rTR, Math.PI * 1.5, Math.PI * 2);
+      }
+      if (!downSame && !rightSame && rBR > 0) {
+        ctx.moveTo(x1, y1 - rBR);
+        ctx.arc(x1 - rBR, y1 - rBR, rBR, 0, Math.PI * 0.5);
+      }
+      if (!downSame && !leftSame && rBL > 0) {
+        ctx.moveTo(x0 + rBL, y1);
+        ctx.arc(x0 + rBL, y1 - rBL, rBL, Math.PI * 0.5, Math.PI);
+      }
+    }
+  }
+
+  // Stroke pass 1: Soft ambient white glow
+  ctx.stroke();
+
+  // Stroke pass 2: Crisp specular white core line
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+  ctx.lineWidth = 0.9;
+  ctx.shadowBlur = 0;
+  ctx.stroke();
+
+  ctx.restore();
+
   // 3. Radial Ink Blooms (smooth conquest expansion waves)
   const now = performance.now();
   for (let i = inkBlooms.length - 1; i >= 0; i--) {
