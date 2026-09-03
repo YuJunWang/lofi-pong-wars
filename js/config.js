@@ -56,16 +56,16 @@ const COLOR_PALETTES = {
       { id: 5, name: 'Nordic Berry', color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.5)' }
     ]
   },
-  mocha: {
-    id: 'mocha',
-    name: 'Warm Mocha',
+  mono: {
+    id: 'mono',
+    name: 'Monochrome Minimal',
     teams: [
-      { id: 0, name: 'Warm Caramel', color: '#ea580c', glow: 'rgba(234, 88, 12, 0.5)' },
-      { id: 1, name: 'Oat Milk', color: '#cbd5e1', glow: 'rgba(203, 213, 225, 0.5)' },
-      { id: 2, name: 'Espresso Roast', color: '#ca8a04', glow: 'rgba(202, 138, 4, 0.5)' },
-      { id: 3, name: 'Berry Plum', color: '#db2777', glow: 'rgba(219, 39, 119, 0.5)' },
-      { id: 4, name: 'Cinnamon Stick', color: '#854d0e', glow: 'rgba(133, 77, 14, 0.5)' },
-      { id: 5, name: 'Night Brew', color: '#6366f1', glow: 'rgba(99, 102, 241, 0.5)' }
+      { id: 0, name: 'Paper White', color: '#ffffff', glow: 'rgba(255, 255, 255, 0.7)' },
+      { id: 1, name: 'Pitch Obsidian', color: '#18181b', glow: 'rgba(255, 255, 255, 0.35)' },
+      { id: 2, name: 'Neutral Gray', color: '#71717a', glow: 'rgba(113, 113, 122, 0.6)' },
+      { id: 3, name: 'Platinum Silver', color: '#d4d4d8', glow: 'rgba(212, 212, 216, 0.6)' },
+      { id: 4, name: 'Dark Charcoal', color: '#3f3f46', glow: 'rgba(63, 63, 70, 0.6)' },
+      { id: 5, name: 'Light Slate', color: '#a1a1aa', glow: 'rgba(161, 161, 170, 0.6)' }
     ]
   }
 };
