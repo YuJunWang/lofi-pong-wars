@@ -156,12 +156,12 @@ const SOUND_STYLES = {
       { name: 'Retrowave Pad', mult: 0.75, oscType: 'square', detune: 1.003, filterStart: 2100, filterEnd: 350, attack: 0.025, decay: 1.4, gain: 0.19 }
     ],
     wallVoices: [
-      { name: 'Cyber Click', type: 'click', freq: 1600, decay: 0.02, gain: 0.07 },
-      { name: '808 Sub Tap', type: 'sub', freq: 75, endFreq: 40, decay: 0.08, gain: 0.12 },
-      { name: 'Metallic Ping', type: 'tone', freq: 2200, endFreq: 1200, decay: 0.04, gain: 0.05 },
-      { name: 'Neon Closed Hat', type: 'noise', freq: 7000, decay: 0.025, gain: 0.06 },
-      { name: 'Laser Blip', type: 'click', freq: 2800, decay: 0.02, gain: 0.06 },
-      { name: 'Sub Thump', type: 'sub', freq: 90, endFreq: 45, decay: 0.06, gain: 0.10 }
+      { name: 'Cyber Click', type: 'click', freq: 2200, endFreq: 900, decay: 0.05, gain: 0.22 },
+      { name: '808 Sub Tap', type: 'sub', freq: 145, endFreq: 52, decay: 0.11, gain: 0.28 },
+      { name: 'Metallic Ping', type: 'tone', freq: 2400, endFreq: 1100, decay: 0.07, gain: 0.20 },
+      { name: 'Neon Closed Hat', type: 'noise', freq: 6500, decay: 0.045, gain: 0.19 },
+      { name: 'Laser Blip', type: 'click', freq: 3200, endFreq: 1200, decay: 0.05, gain: 0.22 },
+      { name: 'Sub Thump', type: 'sub', freq: 160, endFreq: 65, decay: 0.09, gain: 0.25 }
     ]
   },
 
@@ -219,12 +219,12 @@ const SOUND_STYLES = {
       { name: 'Game Over Sub', mult: 0.65, oscType: 'triangle', detune: 1.0, filterStart: 900, filterEnd: 160, attack: 0.004, decay: 0.6, gain: 0.30 }
     ],
     wallVoices: [
-      { name: 'NES Pop', type: 'click', freq: 900, decay: 0.015, gain: 0.08 },
-      { name: 'NES Kick', type: 'sub', freq: 110, endFreq: 30, decay: 0.04, gain: 0.14 },
-      { name: 'Coin Blip', type: 'tone', freq: 1800, endFreq: 2400, decay: 0.03, gain: 0.06 },
-      { name: 'Noise Snare', type: 'noise', freq: 4000, decay: 0.03, gain: 0.07 },
-      { name: 'Blip High', type: 'click', freq: 1400, decay: 0.02, gain: 0.07 },
-      { name: 'Sub Beep', type: 'sub', freq: 85, endFreq: 40, decay: 0.05, gain: 0.12 }
+      { name: 'NES Pop', type: 'click', freq: 1400, endFreq: 600, decay: 0.05, gain: 0.24 },
+      { name: 'NES Kick', type: 'sub', freq: 165, endFreq: 45, decay: 0.10, gain: 0.32 },
+      { name: 'Coin Blip', type: 'tone', freq: 1975.53, endFreq: 2637.02, decay: 0.065, gain: 0.20 },
+      { name: 'Noise Snare', type: 'noise', freq: 4800, decay: 0.06, gain: 0.22 },
+      { name: 'Blip High', type: 'click', freq: 1900, endFreq: 950, decay: 0.05, gain: 0.22 },
+      { name: 'Sub Beep', type: 'sub', freq: 135, endFreq: 50, decay: 0.08, gain: 0.28 }
     ]
   }
 };

@@ -341,6 +341,12 @@ function updatePhysics() {
           const pan = (col / GRID_SIZE) * 1.6 - 0.8;
           synth.playNote(freq, pan, ball.team);
 
+          // Outermost perimeter clash triggers boundary percussion accent
+          const isPerimeter = (row === 0 || row === GRID_SIZE - 1 || col === 0 || col === GRID_SIZE - 1);
+          if (isPerimeter) {
+            synth.playWallHit(pan, ball.team);
+          }
+
           addInkBloom(pt.x, pt.y, row, col, prevTeam, ball.team);
           addFlipParticles(col * tileSize, row * tileSize, ball.palette.color);
           addShockwave(pt.x, pt.y, ball.palette.color);

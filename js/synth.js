@@ -199,15 +199,19 @@ class LoFiSynth {
 
     const filter = this.ctx.createBiquadFilter();
     filter.type = (wallVoice.type === 'brush' || wallVoice.type === 'noise') ? 'bandpass' : 'lowpass';
-    filter.frequency.setValueAtTime(wallVoice.filter || 1500, now);
+    filter.frequency.setValueAtTime(wallVoice.filter || wallVoice.freq || 2500, now);
+    if (wallVoice.type === 'noise') {
+      filter.Q.setValueAtTime(1.2, now);
+    }
 
     // Amplitude Envelope
+    const decayTime = wallVoice.decay || 0.06;
     gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(wallVoice.gain || 0.08, now + 0.002);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + (wallVoice.decay || 0.05));
+    gainNode.gain.linearRampToValueAtTime(wallVoice.gain || 0.18, now + 0.002);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + decayTime);
 
     if (wallVoice.type === 'brush' || wallVoice.type === 'noise') {
-      const bufferSize = Math.max(256, Math.floor(this.ctx.sampleRate * (wallVoice.decay || 0.04)));
+      const bufferSize = Math.max(512, Math.floor(this.ctx.sampleRate * decayTime));
       const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
@@ -224,7 +228,7 @@ class LoFiSynth {
         gainNode.connect(this.masterGain);
       }
       whiteNoise.start(now);
-      whiteNoise.stop(now + (wallVoice.decay || 0.04) + 0.02);
+      whiteNoise.stop(now + decayTime + 0.02);
     } else {
       const osc = this.ctx.createOscillator();
       osc.type = (wallVoice.type === 'sub') ? 'sine' 
@@ -234,7 +238,7 @@ class LoFiSynth {
 
       osc.frequency.setValueAtTime(wallVoice.freq || 440, now);
       if (wallVoice.endFreq) {
-        osc.frequency.exponentialRampToValueAtTime(wallVoice.endFreq, now + (wallVoice.decay || 0.05));
+        osc.frequency.exponentialRampToValueAtTime(Math.max(20, wallVoice.endFreq), now + decayTime);
       }
 
       osc.connect(filter);
@@ -247,7 +251,7 @@ class LoFiSynth {
       }
 
       osc.start(now);
-      osc.stop(now + (wallVoice.decay || 0.05) + 0.02);
+      osc.stop(now + decayTime + 0.02);
     }
   }
 
