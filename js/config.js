@@ -119,13 +119,13 @@ const SOUND_STYLES = {
       // Ball 1: Upright Bass
       { name: 'Upright Bass', mult: 0.5, oscType: 'triangle', detune: 1.0, filterStart: 550, filterEnd: 180, attack: 0.015, decay: 1.6, gain: 0.35 },
       // Ball 2: Music Box
-      { name: 'Music Box', mult: 2.0, oscType: 'sine', detune: 1.001, filterStart: 3500, filterEnd: 1200, attack: 0.004, decay: 0.9, gain: 0.18 },
+      { name: 'Music Box', mult: 1.5, oscType: 'sine', detune: 1.001, filterStart: 2200, filterEnd: 650, attack: 0.006, decay: 0.9, gain: 0.16 },
       // Ball 3: Muted Pluck
-      { name: 'Muted Pluck', mult: 1.0, oscType: 'triangle', detune: 1.005, filterStart: 2400, filterEnd: 220, attack: 0.003, decay: 0.65, gain: 0.22 },
-      // Ball 4: Vibraphone Chime
-      { name: 'Vibraphone Chime', mult: 1.5, oscType: 'sine', detune: 1.002, filterStart: 2800, filterEnd: 600, attack: 0.006, decay: 1.2, gain: 0.20 },
-      // Ball 5: Soft Jazz Flute
-      { name: 'Jazz Flute', mult: 1.25, oscType: 'triangle', detune: 1.008, filterStart: 1800, filterEnd: 450, attack: 0.02, decay: 1.1, gain: 0.21 }
+      { name: 'Muted Pluck', mult: 1.0, oscType: 'triangle', detune: 1.005, filterStart: 1800, filterEnd: 220, attack: 0.004, decay: 0.65, gain: 0.20 },
+      // Ball 4: Vibraphone Chime (Mellow warm vibe)
+      { name: 'Vibraphone Chime', mult: 1.0, oscType: 'sine', detune: 1.0015, filterStart: 1600, filterEnd: 380, attack: 0.012, decay: 1.3, gain: 0.18 },
+      // Ball 5: Soft Jazz Flute (Warm breathy tone)
+      { name: 'Jazz Flute', mult: 1.0, oscType: 'sine', detune: 1.003, filterStart: 1200, filterEnd: 320, attack: 0.025, decay: 1.25, gain: 0.19 }
     ],
     wallVoices: null // Pure silence on wall bounces for focus
   },
@@ -143,24 +143,24 @@ const SOUND_STYLES = {
     ],
     voices: [
       // Ball 0: 80s Analog Saw Lead
-      { name: 'Saw Lead', mult: 1.0, oscType: 'sawtooth', detune: 1.004, filterStart: 3800, filterEnd: 650, attack: 0.005, decay: 1.1, gain: 0.18 },
+      { name: 'Saw Lead', mult: 1.0, oscType: 'sawtooth', detune: 1.004, filterStart: 2800, filterEnd: 500, attack: 0.008, decay: 1.1, gain: 0.18 },
       // Ball 1: Reese Sub Bass
       { name: 'Reese Bass', mult: 0.5, oscType: 'sawtooth', detune: 1.008, filterStart: 900, filterEnd: 150, attack: 0.02, decay: 1.5, gain: 0.28 },
       // Ball 2: FM Crystal Arp
-      { name: 'Crystal Arp', mult: 2.0, oscType: 'square', detune: 1.002, filterStart: 4500, filterEnd: 1100, attack: 0.002, decay: 0.8, gain: 0.12 },
+      { name: 'Crystal Arp', mult: 1.5, oscType: 'sine', detune: 1.002, filterStart: 2400, filterEnd: 650, attack: 0.006, decay: 0.8, gain: 0.14 },
       // Ball 3: Neon Pluck
-      { name: 'Neon Pluck', mult: 1.0, oscType: 'sawtooth', detune: 1.006, filterStart: 3200, filterEnd: 400, attack: 0.003, decay: 0.55, gain: 0.20 },
-      // Ball 4: Cyber Stabs
-      { name: 'Cyber Stabs', mult: 1.5, oscType: 'sawtooth', detune: 1.005, filterStart: 4200, filterEnd: 750, attack: 0.004, decay: 0.9, gain: 0.16 },
-      // Ball 5: Retrowave Pad
-      { name: 'Retrowave Pad', mult: 0.75, oscType: 'square', detune: 1.003, filterStart: 2100, filterEnd: 350, attack: 0.025, decay: 1.4, gain: 0.19 }
+      { name: 'Neon Pluck', mult: 1.0, oscType: 'sawtooth', detune: 1.006, filterStart: 2200, filterEnd: 350, attack: 0.005, decay: 0.55, gain: 0.19 },
+      // Ball 4: Cyber Brass Stab (Warm, punchy analog brass)
+      { name: 'Cyber Stabs', mult: 1.0, oscType: 'triangle', detune: 1.003, filterStart: 1800, filterEnd: 420, attack: 0.012, decay: 0.85, gain: 0.17 },
+      // Ball 5: Retrowave Pad (Lush velvety chorus)
+      { name: 'Retrowave Pad', mult: 0.75, oscType: 'sawtooth', detune: 1.002, filterStart: 1200, filterEnd: 280, attack: 0.035, decay: 1.5, gain: 0.18 }
     ],
     wallVoices: [
-      { name: 'Cyber Click', type: 'click', freq: 2200, endFreq: 900, decay: 0.05, gain: 0.22 },
+      { name: 'Cyber Click', type: 'click', freq: 1600, endFreq: 600, decay: 0.045, gain: 0.20 },
       { name: '808 Sub Tap', type: 'sub', freq: 145, endFreq: 52, decay: 0.11, gain: 0.28 },
-      { name: 'Metallic Ping', type: 'tone', freq: 2400, endFreq: 1100, decay: 0.07, gain: 0.20 },
-      { name: 'Neon Closed Hat', type: 'noise', freq: 6500, decay: 0.045, gain: 0.19 },
-      { name: 'Laser Blip', type: 'click', freq: 3200, endFreq: 1200, decay: 0.05, gain: 0.22 },
+      { name: 'Metallic Ping', type: 'tone', freq: 1200, endFreq: 550, decay: 0.065, gain: 0.16 },
+      { name: 'Neon Closed Hat', type: 'noise', freq: 4200, decay: 0.04, gain: 0.14 },
+      { name: 'Laser Blip', type: 'click', freq: 1100, endFreq: 380, decay: 0.045, gain: 0.16 },
       { name: 'Sub Thump', type: 'sub', freq: 160, endFreq: 65, decay: 0.09, gain: 0.25 }
     ]
   },
@@ -178,17 +178,17 @@ const SOUND_STYLES = {
     ],
     voices: [
       // Ball 0: Plucked Koto (古箏)
-      { name: 'Plucked Koto', mult: 1.0, oscType: 'triangle', detune: 1.003, filterStart: 2800, filterEnd: 300, attack: 0.004, decay: 1.4, gain: 0.28 },
+      { name: 'Plucked Koto', mult: 1.0, oscType: 'triangle', detune: 1.003, filterStart: 2400, filterEnd: 280, attack: 0.006, decay: 1.4, gain: 0.28 },
       // Ball 1: Bamboo Flute Drone (尺八)
       { name: 'Bamboo Flute', mult: 0.5, oscType: 'sine', detune: 1.005, filterStart: 850, filterEnd: 240, attack: 0.04, decay: 1.8, gain: 0.32 },
       // Ball 2: Singing Bowl (頌缽)
-      { name: 'Singing Bowl', mult: 1.5, oscType: 'sine', detune: 1.001, filterStart: 1800, filterEnd: 550, attack: 0.02, decay: 2.2, gain: 0.20 },
+      { name: 'Singing Bowl', mult: 1.25, oscType: 'sine', detune: 1.001, filterStart: 1500, filterEnd: 450, attack: 0.025, decay: 2.2, gain: 0.20 },
       // Ball 3: Kalimba (拇指琴)
-      { name: 'Kalimba', mult: 2.0, oscType: 'sine', detune: 1.002, filterStart: 3200, filterEnd: 900, attack: 0.003, decay: 0.85, gain: 0.22 },
-      // Ball 4: Wind Chime (風鈴)
-      { name: 'Wind Chime', mult: 2.5, oscType: 'sine', detune: 1.001, filterStart: 4200, filterEnd: 1500, attack: 0.002, decay: 1.1, gain: 0.16 },
-      // Ball 5: Taiko Rim (太鼓側音)
-      { name: 'Taiko Rim', mult: 0.75, oscType: 'triangle', detune: 1.004, filterStart: 1200, filterEnd: 280, attack: 0.008, decay: 0.95, gain: 0.26 }
+      { name: 'Kalimba', mult: 1.5, oscType: 'sine', detune: 1.0015, filterStart: 2200, filterEnd: 600, attack: 0.006, decay: 0.85, gain: 0.20 },
+      // Ball 4: Temple Bell (溫潤陶鐘/風鈴 - 告別高頻蜂鳴)
+      { name: 'Clay Chime', mult: 1.0, oscType: 'sine', detune: 1.001, filterStart: 1500, filterEnd: 380, attack: 0.015, decay: 1.3, gain: 0.16 },
+      // Ball 5: Taiko Rim (溫潤太鼓邊音)
+      { name: 'Taiko Rim', mult: 0.65, oscType: 'sine', detune: 1.002, filterStart: 750, filterEnd: 200, attack: 0.015, decay: 1.1, gain: 0.24 }
     ],
     wallVoices: null // Pure silence for meditation
   },
@@ -206,25 +206,25 @@ const SOUND_STYLES = {
     ],
     voices: [
       // Ball 0: NES Pulse Lead (50% Square)
-      { name: 'Pulse Lead', mult: 1.0, oscType: 'square', detune: 1.0, filterStart: 5000, filterEnd: 2200, attack: 0.002, decay: 0.45, gain: 0.16 },
+      { name: 'Pulse Lead', mult: 1.0, oscType: 'square', detune: 1.0, filterStart: 3200, filterEnd: 1200, attack: 0.004, decay: 0.45, gain: 0.15 },
       // Ball 1: NES Triangle Bass
-      { name: 'Triangle Bass', mult: 0.5, oscType: 'triangle', detune: 1.0, filterStart: 1200, filterEnd: 200, attack: 0.005, decay: 0.7, gain: 0.35 },
+      { name: 'Triangle Bass', mult: 0.5, oscType: 'triangle', detune: 1.0, filterStart: 1000, filterEnd: 180, attack: 0.005, decay: 0.7, gain: 0.35 },
       // Ball 2: Fast Pulse Arp
-      { name: 'Pulse Arp', mult: 2.0, oscType: 'square', detune: 1.001, filterStart: 6000, filterEnd: 3000, attack: 0.001, decay: 0.35, gain: 0.12 },
+      { name: 'Pulse Arp', mult: 1.5, oscType: 'triangle', detune: 1.001, filterStart: 2400, filterEnd: 800, attack: 0.003, decay: 0.35, gain: 0.14 },
       // Ball 3: Retro Coin Blip
-      { name: 'Coin Blip', mult: 1.5, oscType: 'square', detune: 1.002, filterStart: 4500, filterEnd: 1800, attack: 0.002, decay: 0.28, gain: 0.18 },
-      // Ball 4: 1-Up Trill
-      { name: '1-Up Trill', mult: 2.25, oscType: 'square', detune: 1.003, filterStart: 5500, filterEnd: 2400, attack: 0.002, decay: 0.38, gain: 0.14 },
+      { name: 'Coin Blip', mult: 1.25, oscType: 'triangle', detune: 1.002, filterStart: 2200, filterEnd: 650, attack: 0.004, decay: 0.3, gain: 0.17 },
+      // Ball 4: 1-Up Chime (Softened from 5500Hz square to warm triangle chime)
+      { name: '1-Up Chime', mult: 1.0, oscType: 'triangle', detune: 1.001, filterStart: 1800, filterEnd: 500, attack: 0.008, decay: 0.45, gain: 0.16 },
       // Ball 5: Game Over Sub
-      { name: 'Game Over Sub', mult: 0.65, oscType: 'triangle', detune: 1.0, filterStart: 900, filterEnd: 160, attack: 0.004, decay: 0.6, gain: 0.30 }
+      { name: 'Game Over Sub', mult: 0.65, oscType: 'triangle', detune: 1.0, filterStart: 800, filterEnd: 150, attack: 0.005, decay: 0.65, gain: 0.30 }
     ],
     wallVoices: [
-      { name: 'NES Pop', type: 'click', freq: 1400, endFreq: 600, decay: 0.05, gain: 0.24 },
+      { name: 'NES Pop', type: 'click', freq: 1100, endFreq: 450, decay: 0.045, gain: 0.20 },
       { name: 'NES Kick', type: 'sub', freq: 165, endFreq: 45, decay: 0.10, gain: 0.32 },
-      { name: 'Coin Blip', type: 'tone', freq: 1975.53, endFreq: 2637.02, decay: 0.065, gain: 0.20 },
-      { name: 'Noise Snare', type: 'noise', freq: 4800, decay: 0.06, gain: 0.22 },
-      { name: 'Blip High', type: 'click', freq: 1900, endFreq: 950, decay: 0.05, gain: 0.22 },
-      { name: 'Sub Beep', type: 'sub', freq: 135, endFreq: 50, decay: 0.08, gain: 0.28 }
+      { name: 'Coin Blip', type: 'tone', freq: 1200, endFreq: 1600, decay: 0.06, gain: 0.16 },
+      { name: 'Noise Snare', type: 'noise', freq: 3200, decay: 0.05, gain: 0.16 },
+      { name: 'Blip High', type: 'click', freq: 850, endFreq: 380, decay: 0.045, gain: 0.16 },
+      { name: 'Sub Beep', type: 'sub', freq: 135, endFreq: 50, decay: 0.08, gain: 0.26 }
     ]
   }
 };
