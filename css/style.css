@@ -181,6 +181,13 @@ canvas {
 .seg-4 { background: var(--team-4); }
 .seg-5 { background: var(--team-5); }
 
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
 .chord-badge {
   display: inline-flex;
   align-items: center;
@@ -200,6 +207,36 @@ canvas {
   color: var(--accent-cyan);
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
+}
+
+.github-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(10, 14, 26, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.github-badge:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.footer-divider {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+  user-select: none;
 }
 
 /* Fluid Glassmorphic Segmented Dial (2P / 3P / 4P / 5P / 6P) */
@@ -787,6 +824,12 @@ button.icon-btn.active {
   }
   .btn-label-desktop {
     display: none;
+  }
+  .github-label {
+    display: none;
+  }
+  .github-badge {
+    padding: 4px 8px;
   }
   .studio-popover {
     width: 100%;
