@@ -10,7 +10,7 @@ const CHORD_CHANGE_HITS = 24;
 const COLOR_PALETTES = {
   sunset: {
     id: 'sunset',
-    name: '🌅 Sunset Lo-Fi',
+    name: 'Sunset Amber',
     teams: [
       { id: 0, name: 'Amber Sunset', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' },
       { id: 1, name: 'Twilight Lavender', color: '#818cf8', glow: 'rgba(129, 140, 248, 0.5)' },
@@ -22,7 +22,7 @@ const COLOR_PALETTES = {
   },
   cyber: {
     id: 'cyber',
-    name: '🌃 Cyber Neon',
+    name: 'Cyber Neon',
     teams: [
       { id: 0, name: 'Electric Cyan', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.5)' },
       { id: 1, name: 'Neon Magenta', color: '#ec4899', glow: 'rgba(236, 72, 153, 0.5)' },
@@ -34,7 +34,7 @@ const COLOR_PALETTES = {
   },
   matcha: {
     id: 'matcha',
-    name: '🍵 Uji Matcha',
+    name: 'Uji Matcha',
     teams: [
       { id: 0, name: 'Matcha Green', color: '#65a30d', glow: 'rgba(101, 163, 13, 0.5)' },
       { id: 1, name: 'Sakura Petal', color: '#f472b6', glow: 'rgba(244, 114, 182, 0.5)' },
@@ -46,7 +46,7 @@ const COLOR_PALETTES = {
   },
   nordic: {
     id: 'nordic',
-    name: '❄️ Nordic Pastel',
+    name: 'Nordic Frost',
     teams: [
       { id: 0, name: 'Glacial Ice', color: '#38bdf8', glow: 'rgba(56, 189, 248, 0.5)' },
       { id: 1, name: 'Arctic Peach', color: '#fb923c', glow: 'rgba(251, 146, 60, 0.5)' },
@@ -58,7 +58,7 @@ const COLOR_PALETTES = {
   },
   mocha: {
     id: 'mocha',
-    name: '☕ Warm Mocha',
+    name: 'Warm Mocha',
     teams: [
       { id: 0, name: 'Warm Caramel', color: '#ea580c', glow: 'rgba(234, 88, 12, 0.5)' },
       { id: 1, name: 'Oat Milk', color: '#cbd5e1', glow: 'rgba(203, 213, 225, 0.5)' },
@@ -104,7 +104,7 @@ function setPalette(paletteId) {
 const SOUND_STYLES = {
   lofi: {
     id: 'lofi',
-    name: '☕ Lo-Fi Study',
+    name: 'Lo-Fi Study',
     description: 'Warm Rhodes, Upright Bass, Music Box, Pluck, Vibes & Flute',
     vinylDefault: true,
     chords: [
@@ -132,7 +132,7 @@ const SOUND_STYLES = {
 
   synthwave: {
     id: 'synthwave',
-    name: '🌌 Cyber Synth',
+    name: 'Cyber Synth',
     description: 'Analog Saw, Reese Bass, Crystal Arp, Neon Pluck, Stabs & Pad',
     vinylDefault: false,
     chords: [
@@ -167,7 +167,7 @@ const SOUND_STYLES = {
 
   zen: {
     id: 'zen',
-    name: '🎋 Zen Garden',
+    name: 'Zen Garden',
     description: 'Koto, Bamboo Flute, Singing Bowl, Kalimba, Wind Chime & Taiko',
     vinylDefault: false,
     chords: [
@@ -195,7 +195,7 @@ const SOUND_STYLES = {
 
   chiptune: {
     id: 'chiptune',
-    name: '👾 8-Bit Arcade',
+    name: '8-Bit Arcade',
     description: 'NES Pulse Lead, Triangle Bass, Fast Arp, Coin, 1-Up & Noise',
     vinylDefault: false,
     chords: [

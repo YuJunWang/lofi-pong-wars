@@ -42,10 +42,85 @@
     <!-- Canvas Simulation -->
     <canvas id="stage"></canvas>
 
-    <!-- Bottom Studio Control Deck (Responsive Dock + Drawer) -->
+    <!-- Bottom Studio Control Deck (Primary Dock + Popover) -->
     <div class="control-deck" id="control-deck">
-      <!-- 1. Permanent Primary Dock Bar -->
-      <div class="dock-main">
+      <!-- 1. Floating Studio Popover Console (Option 1) -->
+      <div class="studio-popover" id="studio-popover" aria-hidden="true">
+        <div class="popover-header">
+          <div class="popover-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+            <span>Studio Console</span>
+          </div>
+          <button class="popover-close-btn" id="btn-popover-close" title="Close Studio Panel">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="popover-body">
+          <!-- Column 1: Audio & Dynamics -->
+          <div class="popover-section">
+            <div class="section-label">Audio & Dynamics</div>
+            
+            <div class="popover-row">
+              <div class="row-header">
+                <span class="row-title">Speed</span>
+                <span class="value-badge" id="speed-value">1.0x</span>
+              </div>
+              <input type="range" id="speed-slider" min="0.5" max="2.5" step="0.1" value="1.0" class="studio-range">
+            </div>
+
+            <div class="popover-row">
+              <div class="row-header">
+                <span class="row-title">Volume</span>
+                <span class="value-badge" id="vol-value">70%</span>
+              </div>
+              <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.7" class="studio-range">
+            </div>
+
+            <div class="popover-row row-between">
+              <span class="row-title">Vinyl Crackle</span>
+              <button class="icon-btn active" id="btn-vinyl" title="Toggle Vinyl Warmth">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+                <span id="vinyl-status">Active</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Column 2: Focus & Shortcuts -->
+          <div class="popover-section">
+            <div class="section-label">Pomodoro Focus</div>
+            
+            <div class="pomo-card">
+              <div class="pomo-display" id="pomo-display">25:00</div>
+              <div class="pomo-buttons">
+                <button class="pomo-btn-primary" id="btn-pomo-toggle">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span id="pomo-btn-text">Start Focus</span>
+                </button>
+                <button class="icon-btn" id="btn-pomo-mode" title="Toggle 25m or 50m Session">25m</button>
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top: 14px;">Shortcuts</div>
+            <div class="shortcuts-grid">
+              <div class="shortcut-tag"><kbd>Space</kbd><span>Pause</span></div>
+              <div class="shortcut-tag"><kbd>2-6</kbd><span>Factions</span></div>
+              <div class="shortcut-tag"><kbd>S</kbd><span>Sound</span></div>
+              <div class="shortcut-tag"><kbd>P</kbd><span>Palette</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="popover-footer">
+          <a href="https://github.com/vnglst/pong-wars" target="_blank" rel="noopener" class="credit-link">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>Original Concept by Koen van Gilst</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 2. Permanent Primary Dock Bar -->
+      <div class="dock-main" id="dock-main">
         <!-- Team Count Selector (Fluid Glass Segmented Dial: 2P..6P) -->
         <div class="mode-switcher" title="Faction Battle Count (Keys 2-6)">
           <button class="mode-btn active" data-teams="2">2P</button>
@@ -57,9 +132,11 @@
 
         <div class="deck-divider"></div>
 
-        <!-- Play / Pause -->
+        <!-- Play / Pause Button -->
         <button class="icon-btn" id="btn-pause" title="Toggle Play / Pause (Space)">
-          <span id="pause-icon">⏸</span>
+          <span id="pause-icon" class="svg-icon-wrap">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+          </span>
           <span id="pause-text" class="btn-label-desktop">Pause</span>
         </button>
 
@@ -67,81 +144,36 @@
 
         <!-- Sound Style Preset Selector -->
         <div class="style-select-wrapper" title="Switch Soundscape Style (Press S)">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 9v6M22 10v4M2 10v4"></path></svg>
           <select id="style-select" class="style-dropdown">
-            <option value="lofi">☕ Lo-Fi</option>
-            <option value="synthwave">🌌 Synth</option>
-            <option value="zen">🎋 Zen</option>
-            <option value="chiptune">👾 8-Bit</option>
+            <option value="lofi">Lo-Fi Study</option>
+            <option value="synthwave">Cyber Synth</option>
+            <option value="zen">Zen Garden</option>
+            <option value="chiptune">8-Bit Arcade</option>
           </select>
         </div>
 
-        <!-- Studio Drawer Toggle Button (Shown on mobile) -->
-        <button class="icon-btn studio-toggle-btn" id="btn-studio-toggle" title="Toggle Studio Settings">
-          <span>🎛️</span>
-        </button>
-      </div>
-
-      <!-- 2. Expandable Studio & Focus Drawer -->
-      <div class="studio-drawer" id="studio-drawer">
-        <div class="deck-divider desktop-only-divider"></div>
-
-        <!-- Playback Speed -->
-        <div class="control-group">
-          <div class="range-control">
-            <span>Speed</span>
-            <input type="range" id="speed-slider" min="0.5" max="2.5" step="0.1" value="1.0">
-          </div>
-        </div>
-
-        <div class="deck-divider desktop-only-divider"></div>
-
-        <!-- Sound Volume & Vinyl -->
-        <div class="control-group">
-          <div class="range-control">
-            <span>Vol</span>
-            <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.7">
-          </div>
-          <button class="icon-btn active" id="btn-vinyl" title="Toggle Vinyl Warmth">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
-            <span>Vinyl</span>
-          </button>
-        </div>
-
-        <div class="deck-divider desktop-only-divider"></div>
+        <div class="deck-divider"></div>
 
         <!-- Color Palette Theme Selector -->
-        <div class="control-group">
-          <div class="style-select-wrapper" title="Switch Color Palette (Press P)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0 0 20c1.5 0 2.5-1 2.5-2.5 0-.7-.3-1.4-.8-1.9-.5-.5-.7-1.2-.7-1.9 0-1.7 1.3-3 3-3h2c2.8 0 5-2.2 5-5 0-4.4-4.5-8-11-8z"></path></svg>
-            <select id="palette-select" class="style-dropdown">
-              <option value="sunset">🌅 Sunset</option>
-              <option value="cyber">🌃 Cyber</option>
-              <option value="matcha">🍵 Matcha</option>
-              <option value="nordic">❄️ Nordic</option>
-              <option value="mocha">☕ Mocha</option>
-            </select>
-          </div>
+        <div class="style-select-wrapper" title="Switch Color Palette (Press P)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0 0 20c1.5 0 2.5-1 2.5-2.5 0-.7-.3-1.4-.8-1.9-.5-.5-.7-1.2-.7-1.9 0-1.7 1.3-3 3-3h2c2.8 0 5-2.2 5-5 0-4.4-4.5-8-11-8z"></path></svg>
+          <select id="palette-select" class="style-dropdown">
+            <option value="sunset">Sunset Amber</option>
+            <option value="cyber">Cyber Neon</option>
+            <option value="matcha">Uji Matcha</option>
+            <option value="nordic">Nordic Frost</option>
+            <option value="mocha">Warm Mocha</option>
+          </select>
         </div>
 
-        <div class="deck-divider desktop-only-divider"></div>
+        <div class="deck-divider"></div>
 
-        <!-- Pomodoro Focus Timer -->
-        <div class="control-group">
-          <div class="pomo-capsule" id="pomo-display">25:00</div>
-          <button class="icon-btn" id="btn-pomo-toggle">Focus</button>
-          <button class="icon-btn" id="btn-pomo-mode">25m</button>
-        </div>
-
-        <div class="deck-divider desktop-only-divider"></div>
-
-        <!-- Attribution Link -->
-        <div class="control-group">
-          <a href="https://github.com/vnglst/pong-wars" target="_blank" rel="noopener" class="credit-link" title="Original Pong Wars by Koen van Gilst">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            <span>Pong Wars</span>
-          </a>
-        </div>
+        <!-- Studio Popover Toggle Button -->
+        <button class="icon-btn" id="btn-studio-toggle" title="Open Studio Controls & Focus Timer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          <span class="btn-label-desktop">Studio</span>
+        </button>
       </div>
     </div>
 
@@ -154,7 +186,7 @@
           An autonomous generative ambient simulation. Watch 2 to 6 color factions battle for territory while synthesizing warm chords in real-time.
         </p>
         <button class="primary-btn" id="start-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
           <span>Start Audio & Simulation</span>
         </button>
         <div class="attribution-note">
@@ -164,7 +196,7 @@
     </div>
 
     <!-- Toast Notification -->
-    <div class="toast-pill" id="toast-msg">Focus session completed! Time for a warm break ☕</div>
+    <div class="toast-pill" id="toast-msg">Focus session completed! Time for a mindful rest.</div>
   </div>
 
   <!-- Classical Zero-Build JavaScript Modules (100% file:// compatible) -->

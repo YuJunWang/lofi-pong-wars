@@ -100,6 +100,7 @@ let isPomoRunning = false;
 
 const pomoDisplay = document.getElementById('pomo-display');
 const pomoToggleBtn = document.getElementById('btn-pomo-toggle');
+const pomoBtnText = document.getElementById('pomo-btn-text');
 const pomoModeBtn = document.getElementById('btn-pomo-mode');
 
 function updatePomoDisplay(seconds) {
@@ -119,12 +120,10 @@ function tickPomo() {
   if (pomoRemainingSeconds <= 0) {
     clearInterval(pomoTimer);
     isPomoRunning = false;
-    if (pomoToggleBtn) {
-      pomoToggleBtn.innerText = "Start Focus";
-      pomoToggleBtn.classList.remove('active');
-    }
+    if (pomoBtnText) pomoBtnText.innerText = "Start Focus";
+    if (pomoToggleBtn) pomoToggleBtn.classList.remove('active');
     if (synth) synth.playChime();
-    triggerToast("🎉 Focus session complete! Time to stretch & hydrate ☕");
+    triggerToast("Focus session completed! Time for a mindful rest.");
   }
 }
 
@@ -133,11 +132,11 @@ if (pomoToggleBtn) {
     if (isPomoRunning) {
       clearInterval(pomoTimer);
       isPomoRunning = false;
-      pomoToggleBtn.innerText = "Start Focus";
+      if (pomoBtnText) pomoBtnText.innerText = "Start Focus";
       pomoToggleBtn.classList.remove('active');
     } else {
       isPomoRunning = true;
-      pomoToggleBtn.innerText = "Pause";
+      if (pomoBtnText) pomoBtnText.innerText = "Pause";
       pomoToggleBtn.classList.add('active');
       pomoEndTime = Date.now() + pomoRemainingSeconds * 1000;
       pomoTimer = setInterval(tickPomo, 400);
@@ -171,8 +170,14 @@ const btnPause = document.getElementById('btn-pause');
 const pauseIcon = document.getElementById('pause-icon');
 const pauseText = document.getElementById('pause-text');
 const speedSlider = document.getElementById('speed-slider');
+const speedValue = document.getElementById('speed-value');
 const volSlider = document.getElementById('vol-slider');
+const volValue = document.getElementById('vol-value');
 const btnVinyl = document.getElementById('btn-vinyl');
+const vinylStatus = document.getElementById('vinyl-status');
+
+const SVG_PAUSE = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
+const SVG_PLAY = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
 
 if (startCard && typeof gsap !== 'undefined') {
   gsap.from(startCard, {
@@ -222,19 +227,19 @@ if (startModal) {
 
 // Mode Selector (2P / 3P / 4P / 5P / 6P)
 document.querySelectorAll('.mode-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
+  btn.addEventListener('click', () => {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     teamCount = parseInt(btn.getAttribute('data-teams'), 10);
     setupGridAndBalls();
-    triggerToast(`⚔️ Switched to ${teamCount}-Faction Battle Mode!`);
+    triggerToast(`Switched to ${teamCount}-Faction Battle Mode`);
   });
 });
 
 if (btnPause) {
   btnPause.addEventListener('click', () => {
     isPaused = !isPaused;
-    if (pauseIcon) pauseIcon.innerText = isPaused ? "▶" : "⏸";
+    if (pauseIcon) pauseIcon.innerHTML = isPaused ? SVG_PLAY : SVG_PAUSE;
     if (pauseText) pauseText.innerText = isPaused ? "Resume" : "Pause";
     btnPause.classList.toggle('active', isPaused);
   });
@@ -243,12 +248,15 @@ if (btnPause) {
 if (speedSlider) {
   speedSlider.addEventListener('input', (e) => {
     speedMultiplier = parseFloat(e.target.value);
+    if (speedValue) speedValue.innerText = `${speedMultiplier.toFixed(1)}x`;
   });
 }
 
 if (volSlider) {
   volSlider.addEventListener('input', (e) => {
-    if (synth) synth.setVolume(parseFloat(e.target.value));
+    const val = parseFloat(e.target.value);
+    if (synth) synth.setVolume(val);
+    if (volValue) volValue.innerText = `${Math.round(val * 100)}%`;
   });
 }
 
@@ -257,7 +265,8 @@ if (btnVinyl) {
     if (!synth) return;
     const enabled = synth.toggleVinyl();
     btnVinyl.classList.toggle('active', enabled);
-    triggerToast(enabled ? "Vinyl Crackle On ☕" : "Vinyl Crackle Muted");
+    if (vinylStatus) vinylStatus.innerText = enabled ? "Active" : "Muted";
+    triggerToast(enabled ? "Vinyl Warmth Active" : "Vinyl Warmth Muted");
   });
 }
 
@@ -281,13 +290,15 @@ if (styleSelect) {
       if (selectedStyle.vinylDefault && !synth.isVinylEnabled) {
         synth.toggleVinyl();
         if (btnVinyl) btnVinyl.classList.add('active');
+        if (vinylStatus) vinylStatus.innerText = "Active";
       } else if (!selectedStyle.vinylDefault && synth.isVinylEnabled) {
         synth.toggleVinyl();
         if (btnVinyl) btnVinyl.classList.remove('active');
+        if (vinylStatus) vinylStatus.innerText = "Muted";
       }
     }
 
-    triggerToast(`🎶 Style: ${selectedStyle.name} (${selectedStyle.description})`);
+    triggerToast(`Soundscape: ${selectedStyle.name}`);
   });
 }
 
@@ -296,27 +307,44 @@ const paletteSelect = document.getElementById('palette-select');
 if (paletteSelect) {
   paletteSelect.addEventListener('change', (e) => {
     setPalette(e.target.value);
-    triggerToast(`🎨 Palette: ${COLOR_PALETTES[e.target.value].name}`);
+    triggerToast(`Theme: ${COLOR_PALETTES[e.target.value].name}`);
   });
 }
 
-// Studio Drawer Toggle (Mobile Floating Dock)
+// Studio Popover Toggle (Option 1)
 const btnStudioToggle = document.getElementById('btn-studio-toggle');
-const studioDrawer = document.getElementById('studio-drawer');
-if (btnStudioToggle && studioDrawer) {
+const studioPopover = document.getElementById('studio-popover');
+const btnPopoverClose = document.getElementById('btn-popover-close');
+
+function toggleStudioPopover(open) {
+  if (!studioPopover) return;
+  const isOpen = (typeof open === 'boolean') ? open : !studioPopover.classList.contains('open');
+  studioPopover.classList.toggle('open', isOpen);
+  studioPopover.setAttribute('aria-hidden', !isOpen);
+  if (btnStudioToggle) btnStudioToggle.classList.toggle('active', isOpen);
+}
+
+if (btnStudioToggle) {
   btnStudioToggle.addEventListener('click', (e) => {
     e.stopPropagation();
-    const isOpen = studioDrawer.classList.toggle('open');
-    btnStudioToggle.classList.toggle('active', isOpen);
-  });
-
-  canvas.addEventListener('pointerdown', () => {
-    if (studioDrawer.classList.contains('open')) {
-      studioDrawer.classList.remove('open');
-      btnStudioToggle.classList.remove('active');
-    }
+    toggleStudioPopover();
   });
 }
+
+if (btnPopoverClose) {
+  btnPopoverClose.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleStudioPopover(false);
+  });
+}
+
+// Click outside popover to dismiss
+document.addEventListener('pointerdown', (e) => {
+  if (!studioPopover || !studioPopover.classList.contains('open')) return;
+  if (!studioPopover.contains(e.target) && btnStudioToggle && !btnStudioToggle.contains(e.target)) {
+    toggleStudioPopover(false);
+  }
+});
 
 // Keyboard Shortcuts
 window.addEventListener('keydown', (e) => {
@@ -338,7 +366,7 @@ window.addEventListener('keydown', (e) => {
     const nextIdx = (palKeys.indexOf(currentPaletteId) + 1) % palKeys.length;
     const nextPal = palKeys[nextIdx];
     setPalette(nextPal);
-    triggerToast(`🎨 Palette: ${COLOR_PALETTES[nextPal].name}`);
+    triggerToast(`Theme: ${COLOR_PALETTES[nextPal].name}`);
   }
 });
 
