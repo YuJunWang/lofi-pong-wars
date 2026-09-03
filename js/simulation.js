@@ -456,52 +456,6 @@ function render() {
         ctx.closePath();
         ctx.fill();
       }
-
-      // 2.2 Liquid Glass Inward Specular Rim (Option A: Subtle Frosted Rim & Ambient Depth)
-      if (!upSame || !leftSame || !downSame || !rightSame) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(x0, y0, w, h, [rTL, rTR, rBR, rBL]);
-        ctx.clip();
-
-        // Top Inward Specular Sheen (Light from -Y)
-        if (!upSame) {
-          const gradTop = ctx.createLinearGradient(0, y0, 0, y0 + 5);
-          gradTop.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
-          gradTop.addColorStop(1, 'rgba(255, 255, 255, 0)');
-          ctx.fillStyle = gradTop;
-          ctx.fillRect(x0, y0, w, 5);
-        }
-
-        // Left Inward Specular Sheen (Light from -X)
-        if (!leftSame) {
-          const gradLeft = ctx.createLinearGradient(x0, 0, x0 + 5, 0);
-          gradLeft.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
-          gradLeft.addColorStop(1, 'rgba(255, 255, 255, 0)');
-          ctx.fillStyle = gradLeft;
-          ctx.fillRect(x0, y0, 5, h);
-        }
-
-        // Bottom Inset Ambient Depth
-        if (!downSame) {
-          const gradBottom = ctx.createLinearGradient(0, y1, 0, y1 - 4);
-          gradBottom.addColorStop(0, 'rgba(0, 0, 0, 0.14)');
-          gradBottom.addColorStop(1, 'rgba(0, 0, 0, 0)');
-          ctx.fillStyle = gradBottom;
-          ctx.fillRect(x0, y1 - 4, w, 4);
-        }
-
-        // Right Inset Ambient Depth
-        if (!rightSame) {
-          const gradRight = ctx.createLinearGradient(x1, 0, x1 - 4, 0);
-          gradRight.addColorStop(0, 'rgba(0, 0, 0, 0.12)');
-          gradRight.addColorStop(1, 'rgba(0, 0, 0, 0)');
-          ctx.fillStyle = gradRight;
-          ctx.fillRect(x1 - 4, y0, 4, h);
-        }
-
-        ctx.restore();
-      }
     }
   }
 
