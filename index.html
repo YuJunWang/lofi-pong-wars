@@ -1213,6 +1213,7 @@
     let balls = [];
     let particles = [];
     let shockwaves = [];
+    let inkBlooms = [];
     let isPaused = false;
     let speedMultiplier = 1.0;
 
@@ -1244,6 +1245,7 @@
     function setupGridAndBalls() {
       grid = [];
       balls = [];
+      inkBlooms = [];
 
       for (let r = 0; r < GRID_SIZE; r++) {
         grid[r] = [];
@@ -1361,6 +1363,22 @@
       });
     }
 
+    function addInkBloom(x, y, row, col, fromTeam, toTeam) {
+      const fromColor = TEAM_PALETTES[fromTeam % TEAM_PALETTES.length]?.color || '#ffffff';
+      const toColor = TEAM_PALETTES[toTeam % TEAM_PALETTES.length]?.color || '#ffffff';
+      inkBlooms.push({
+        x: x,
+        y: y,
+        row: row,
+        col: col,
+        fromColor: fromColor,
+        toColor: toColor,
+        startTime: performance.now(),
+        duration: 130,
+        maxRadius: tileSize * 1.55
+      });
+    }
+
     function updateTerritoryScore() {
       if (!grid || grid.length === 0) return;
       const counts = new Array(teamCount).fill(0);
@@ -1451,6 +1469,7 @@
 
           if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
             if (grid[row] && grid[row][col] !== ball.team) {
+              const prevTeam = grid[row][col];
               grid[row][col] = ball.team;
 
               if (pt.axis === 'x') ball.dx = -ball.dx;
@@ -1460,6 +1479,7 @@
               const pan = (col / GRID_SIZE) * 1.6 - 0.8;
               synth.playNote(freq, pan, ball.team);
 
+              addInkBloom(pt.x, pt.y, row, col, prevTeam, ball.team);
               addFlipParticles(col * tileSize, row * tileSize, ball.palette.color);
               addShockwave(pt.x, pt.y, ball.palette.color);
 
@@ -1504,29 +1524,129 @@
     function render() {
       if (!grid || grid.length === 0 || !balls || balls.length === 0) return;
 
-      // 1. Fill base with crisp pure white for dividing grid lines
-      ctx.fillStyle = '#ffffff';
+      // 1. Fill base with sleek dark frontier seam
+      ctx.fillStyle = '#080c18';
       ctx.fillRect(0, 0, width, height);
 
-      // 2. Grid Tiles (sharp squares separated by crisp white lines)
-      const lineThickness = 1.2;
+      // 2. Organic Territory with Auto-Tiling Filleted Corners
+      const R = Math.floor(tileSize * 0.44); // ~8px smooth fillet radius
+
+      const isSameTeam = (r, c, team) => {
+        if (r < 0 || r >= GRID_SIZE || c < 0 || c >= GRID_SIZE) return false;
+        return grid[r] && grid[r][c] === team;
+      };
+
       for (let r = 0; r < GRID_SIZE; r++) {
         if (!grid[r]) continue;
         for (let c = 0; c < GRID_SIZE; c++) {
           const t = grid[r][c];
-          if (t !== undefined && TEAM_PALETTES[t % TEAM_PALETTES.length]) {
-            ctx.fillStyle = TEAM_PALETTES[t % TEAM_PALETTES.length].color;
-            ctx.fillRect(
-              c * tileSize + lineThickness / 2,
-              r * tileSize + lineThickness / 2,
-              tileSize - lineThickness,
-              tileSize - lineThickness
-            );
+          if (t === undefined || !TEAM_PALETTES[t % TEAM_PALETTES.length]) continue;
+
+          const x = c * tileSize;
+          const y = r * tileSize;
+          const w = tileSize + 0.3; // Subpixel expansion to avoid hairline seams between same-team tiles
+          const h = tileSize + 0.3;
+
+          const upSame = isSameTeam(r - 1, c, t);
+          const downSame = isSameTeam(r + 1, c, t);
+          const leftSame = isSameTeam(r, c - 1, t);
+          const rightSame = isSameTeam(r, c + 1, t);
+
+          // Convex (exterior) corner fillets
+          const rTL = (!upSame && !leftSame) ? R : 0;
+          const rTR = (!upSame && !rightSame) ? R : 0;
+          const rBR = (!downSame && !rightSame) ? R : 0;
+          const rBL = (!downSame && !leftSame) ? R : 0;
+
+          ctx.fillStyle = TEAM_PALETTES[t % TEAM_PALETTES.length].color;
+
+          // Main tile body with convex fillets
+          ctx.beginPath();
+          ctx.roundRect(x, y, w, h, [rTL, rTR, rBR, rBL]);
+          ctx.fill();
+
+          // Concave (interior) corner fillets to smoothly bridge corner transitions
+          // Top-Left inner fillet
+          if (upSame && leftSame && !isSameTeam(r - 1, c - 1, t)) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - R, y);
+            ctx.arcTo(x, y, x, y - R, R);
+            ctx.closePath();
+            ctx.fill();
+          }
+          // Top-Right inner fillet
+          if (upSame && rightSame && !isSameTeam(r - 1, c + 1, t)) {
+            const rx = x + tileSize;
+            ctx.beginPath();
+            ctx.moveTo(rx, y);
+            ctx.lineTo(rx + R, y);
+            ctx.arcTo(rx, y, rx, y - R, R);
+            ctx.closePath();
+            ctx.fill();
+          }
+          // Bottom-Right inner fillet
+          if (downSame && rightSame && !isSameTeam(r + 1, c + 1, t)) {
+            const rx = x + tileSize;
+            const by = y + tileSize;
+            ctx.beginPath();
+            ctx.moveTo(rx, by);
+            ctx.lineTo(rx + R, by);
+            ctx.arcTo(rx, by, rx, by + R, R);
+            ctx.closePath();
+            ctx.fill();
+          }
+          // Bottom-Left inner fillet
+          if (downSame && leftSame && !isSameTeam(r + 1, c - 1, t)) {
+            const by = y + tileSize;
+            ctx.beginPath();
+            ctx.moveTo(x, by);
+            ctx.lineTo(x - R, by);
+            ctx.arcTo(x, by, x, by + R, R);
+            ctx.closePath();
+            ctx.fill();
           }
         }
       }
 
-      // 3. Shockwaves (draw only — physics in updatePhysics)
+      // 3. Radial Ink Blooms (smooth conquest expansion waves)
+      const now = performance.now();
+      for (let i = inkBlooms.length - 1; i >= 0; i--) {
+        const bloom = inkBlooms[i];
+        const elapsed = now - bloom.startTime;
+        if (elapsed >= bloom.duration) {
+          inkBlooms.splice(i, 1);
+          continue;
+        }
+
+        const p = elapsed / bloom.duration; // 0 -> 1
+        const ease = 1 - (1 - p) * (1 - p); // power2.out
+        const r = bloom.maxRadius * ease;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(bloom.col * tileSize - 1, bloom.row * tileSize - 1, tileSize + 2, tileSize + 2);
+        ctx.clip();
+
+        // Expanding radial ink bloom
+        ctx.beginPath();
+        ctx.arc(bloom.x, bloom.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = bloom.toColor;
+        ctx.fill();
+
+        // Initial 40ms: subtle luminous white micro-ring
+        if (p < 0.35) {
+          const ringAlpha = (1 - p / 0.35) * 0.45;
+          ctx.beginPath();
+          ctx.arc(bloom.x, bloom.y, Math.max(1, r * 0.82), 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${ringAlpha})`;
+          ctx.lineWidth = 1.6;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // 4. Shockwaves (draw only — physics in updatePhysics)
       for (let i = shockwaves.length - 1; i >= 0; i--) {
         const sw = shockwaves[i];
         ctx.beginPath();
