@@ -15,7 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <!-- Modular Design System Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=2.0.4">
+  <link rel="stylesheet" href="css/style.css?v=2.0.5">
 </head>
 <body>
 
@@ -142,11 +142,11 @@
       <div class="dock-main" id="dock-main">
         <!-- Team Count Selector (Fluid Glass Segmented Dial: 2P..6P) -->
         <div class="mode-switcher" title="Faction Battle Count (Keys 2-6)">
-          <button class="mode-btn active" data-teams="2">2P</button>
+          <button class="mode-btn" data-teams="2">2P</button>
           <button class="mode-btn" data-teams="3">3P</button>
           <button class="mode-btn" data-teams="4">4P</button>
           <button class="mode-btn" data-teams="5">5P</button>
-          <button class="mode-btn" data-teams="6">6P</button>
+          <button class="mode-btn active" data-teams="6">6P</button>
         </div>
 
         <div class="deck-divider"></div>
@@ -165,7 +165,7 @@
         <div class="style-select-wrapper" title="Switch Soundscape Style (Press S)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 9v6M22 10v4M2 10v4"></path></svg>
           <select id="style-select" class="style-dropdown">
-            <option value="lofi">Lo-Fi</option>
+            <option value="lofi" selected>Lo-Fi</option>
             <option value="synthwave">Cyber</option>
             <option value="zen">Zen</option>
             <option value="chiptune">8-Bit</option>
@@ -182,7 +182,7 @@
             <option value="cyber">Neon</option>
             <option value="matcha">Matcha</option>
             <option value="nordic">Frost</option>
-            <option value="mono">Mono</option>
+            <option value="mono" selected>Mono</option>
           </select>
         </div>
 
@@ -220,9 +220,9 @@
   </div>
 
   <!-- Classical Zero-Build JavaScript Modules (100% file:// compatible) -->
-  <script src="js/config.js?v=2.0.4"></script>
-  <script src="js/synth.js?v=2.0.4"></script>
-  <script src="js/simulation.js?v=2.0.4"></script>
-  <script src="js/ui.js?v=2.0.4"></script>
+  <script src="js/config.js?v=2.0.5"></script>
+  <script src="js/synth.js?v=2.0.5"></script>
+  <script src="js/simulation.js?v=2.0.5"></script>
+  <script src="js/ui.js?v=2.0.5"></script>
 </body>
 </html>

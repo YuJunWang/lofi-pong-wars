@@ -409,7 +409,8 @@ window.addEventListener('resize', () => {
 // --- Initial Startup ---
 function initApp() {
   resizeCanvas();
-  setPalette('sunset');
+  teamCount = 6;
+  setPalette('mono');
   setupGridAndBalls();
 }
 initApp();

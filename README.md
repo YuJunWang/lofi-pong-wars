@@ -25,7 +25,7 @@ Instead of just bouncing pixels, every tile flip triggers a real-time synthesize
 ### Highlights
 - **100% Procedural Audio**: No MP3s, no sound files. Everything runs live on the Web Audio API across 4 styles (`Lo-Fi Study`, `Cyber Synth`, `Zen Garden`, `8-Bit Arcade`).
 - **2 to 6 Factions**: Switch between 2P and 6P on the fly (dual, triangle, quad, pinwheel, and hex layouts). Each ball commands its own instrument voice.
-- **Organic Canvas**: Pure minimalist flat geometry with filleted corner blending and radial ink ripples. No wireframes.
+- **Organic Canvas & Phantom Mode**: Pure minimalist flat geometry with filleted corner blending. Defaults to **Monochrome Minimal 6P** in Phantom Mode (hidden balls, living liquid territory morphing; press `B` anytime to reveal).
 - **Focus Console**: Built-in 25m/50m Pomodoro timer, vinyl crackle generator, and speed/volume sliders tucked into a sliding studio drawer.
 - **Runs Offline**: Double-click `index.html`. No Node, no bundler, no build step.
 
@@ -39,6 +39,7 @@ Instead of just bouncing pixels, every tile flip triggers a real-time synthesize
 | `2` – `6` | Set faction count (2P to 6P) |
 | `S` | Cycle soundscape style |
 | `P` | Cycle color palette |
+| `B` | Toggle Phantom Mode (Hide / Show Balls) |
 | `Click / Drag` | Send shockwaves to deflect balls |
 
 ---

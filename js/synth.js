@@ -56,6 +56,11 @@ class LoFiSynth {
 
       this.masterGain.connect(this.ctx.destination);
 
+      if (this.ctx.createMediaStreamDestination) {
+        this.dest = this.ctx.createMediaStreamDestination();
+        this.masterGain.connect(this.dest);
+      }
+
       this.initVinyl();
       this.initialized = true;
 

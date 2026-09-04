@@ -71,7 +71,7 @@ const COLOR_PALETTES = {
   }
 };
 
-let currentPaletteId = 'sunset';
+let currentPaletteId = 'mono';
 let currentStyleId = 'lofi';
 let TEAM_PALETTES = COLOR_PALETTES[currentPaletteId].teams;
 
