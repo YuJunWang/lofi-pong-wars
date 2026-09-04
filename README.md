@@ -9,11 +9,24 @@
   <a href="README.zh-TW.md">繁體中文</a>
 </p>
 
-<p align="center">
-  <a href="https://yujunwang.github.io/lofi-pong-wars/">
-    <img src="pic/demo.gif" alt="Lo-Fi Pong Wars Demo" width="440" style="border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.55);">
-  </a>
-</p>
+<table align="center" style="border: none; background: transparent;">
+  <tr style="border: none;">
+    <td align="center" style="border: none; padding: 10px;">
+      <a href="https://yujunwang.github.io/lofi-pong-wars/">
+        <img src="pic/demo_classic.gif" alt="Classic Battle (Sunset Amber 4P)" width="380" style="border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.55);">
+      </a>
+      <br>
+      <sub><strong>Classic Battle</strong> (Sunset Amber • 4P with Balls)</sub>
+    </td>
+    <td align="center" style="border: none; padding: 10px;">
+      <a href="https://yujunwang.github.io/lofi-pong-wars/">
+        <img src="pic/demo.gif" alt="Phantom Mode (Monochrome Minimal 6P)" width="380" style="border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.55);">
+      </a>
+      <br>
+      <sub><strong>Phantom Mode</strong> (Monochrome Minimal • 6P Pure Ink)</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
